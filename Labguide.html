@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Claude Code Lab Guide — ADLC Python</title>
+<style>
+/* ── System fonts only — no external deps ── */
+:root{
+  --bg:#0A0E1A;--bg2:#0F1525;--bg3:#151C30;
+  --card:#1A2235;--card2:#1F2A40;
+  --border:#2A3550;--border2:#3A4860;
+  --text:#E8EDF8;--text2:#8B97B8;--text3:#5A6880;
+  --orange:#FF6B35;--orange2:#FF8C5A;
+  --gold:#F5C842;--gold2:#FFD96B;
+  --teal:#00D4AA;--teal2:#00F2C3;
+  --purple:#A855F7;--purple2:#C084FC;
+  --blue:#3B82F6;--blue2:#60A5FA;
+  --green:#22C55E;--red:#EF4444;
+  --ff:'Segoe UI',system-ui,sans-serif;
+  --fm:'Cascadia Code','Fira Code','Courier New',monospace;
+  --r:8px;--r2:14px;
+}
+/* ── Light theme overrides ── */
+[data-theme="light"]{
+  --bg:#F5F5F0;--bg2:#EEEEE8;--bg3:#E5E5DE;
+  --card:#FFFFFF;--card2:#F0F0EA;
+  --border:#D4D4C8;--border2:#B8B8AA;
+  --text:#1A1A2E;--text2:#4A4A6A;--text3:#8A8AAA;
+  --orange:#E85D20;--orange2:#D44A10;
+  --gold:#C8990A;--gold2:#B8890A;
+  --teal:#008C72;--teal2:#007A62;
+  --purple:#7C3AED;--purple2:#6D28D9;
+  --blue:#2563EB;--blue2:#1D4ED8;
+  --green:#16A34A;--red:#DC2626;
+}
+[data-theme="light"] .code-block,[data-theme="light"] .fi-wrap,[data-theme="light"] .code-wrap,[data-theme="light"] .egg-cmd{
+  color:#2D3748;
+}
+[data-theme="light"] .bl{color:#4A5568;}
+[data-theme="light"] .xi{color:#1A1A2E;}
+[data-theme="light"] table.st td,[data-theme="light"] .rt td{color:var(--text2);}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--ff);font-size:15px;line-height:1.7;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── Layout ── */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:250px;min-width:250px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.main{margin-left:250px;flex:1}
+
+/* ── Sidebar ── */
+.s-logo{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.s-logo .tag{font-size:10px;color:var(--orange);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.s-logo h2{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
+
+.xp-widget{margin:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:12px}
+.xp-widget .lbl{font-size:9px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.xp-widget .val{font-size:22px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.xp-widget .sub{font-size:11px;color:var(--text3)}
+.xp-bar{margin-top:8px;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--orange));border-radius:3px;transition:width .5s ease}
+.badge-pill{margin-top:8px;display:inline-flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px 9px;font-size:10px;color:var(--text2)}
+.badge-dot{width:7px;height:7px;border-radius:50%;background:var(--gold);flex-shrink:0}
+
+.nav-sec{padding:10px 14px 4px;font-size:9px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase}
+.nav-a{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;border-radius:6px;margin:1px 6px;font-size:12px;color:var(--text2);transition:background .12s,color .12s;text-decoration:none;user-select:none}
+.nav-a:hover{background:var(--card);color:var(--text)}
+.nav-a.active{background:var(--card2);color:var(--orange)}
+.nav-num{font-size:9px;color:var(--text3);min-width:18px;font-variant-numeric:tabular-nums}
+.nav-xp{margin-left:auto;font-size:9px;color:var(--gold);font-weight:700}
+.nav-done{margin-left:auto;color:var(--green);font-size:11px}
+.dpill{font-size:9px;padding:2px 7px;border-radius:9px;font-weight:600;letter-spacing:.04em}
+.d-easy{background:rgba(0,212,170,.1);color:var(--teal2);border:1px solid rgba(0,212,170,.25)}
+.d-hard{background:rgba(245,200,66,.1);color:var(--gold2);border:1px solid rgba(245,200,66,.25)}
+.d-boss{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.25)}
+.d-final{background:rgba(168,85,247,.1);color:var(--purple2);border:1px solid rgba(168,85,247,.25)}
+
+/* ── Hero ── */
+.hero{background:var(--bg2);border-bottom:1px solid var(--border);padding:56px 44px 44px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;top:-100px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,rgba(255,107,53,.06) 0%,transparent 65%);pointer-events:none}
+.hero .htag{font-size:10px;color:var(--orange);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
+.hero h1{font-size:clamp(26px,4vw,44px);font-weight:800;color:var(--text);line-height:1.1;margin-bottom:14px}
+.hero h1 em{color:var(--orange);font-style:normal}
+.hero p{font-size:15px;color:var(--text2);max-width:540px;margin-bottom:24px}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;padding:4px 11px;border-radius:18px;font-size:11px;font-weight:600;border:1px solid}
+.p-or{background:rgba(255,107,53,.07);color:var(--orange2);border-color:rgba(255,107,53,.22)}
+.p-te{background:rgba(0,212,170,.07);color:var(--teal2);border-color:rgba(0,212,170,.22)}
+.p-pu{background:rgba(168,85,247,.07);color:var(--purple2);border-color:rgba(168,85,247,.22)}
+.p-go{background:rgba(245,200,66,.07);color:var(--gold2);border-color:rgba(245,200,66,.22)}
+.p-bl{background:rgba(59,130,246,.07);color:var(--blue2);border-color:rgba(59,130,246,.22)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .14s;letter-spacing:.04em}
+.btn-or{background:var(--orange);color:#fff}.btn-or:hover{background:var(--orange2);transform:translateY(-1px)}
+.btn-gh{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-gh:hover{border-color:var(--border2);color:var(--text)}
+.btn-go{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.28)}.btn-go:hover{background:rgba(245,200,66,.18)}
+.btn-te{background:rgba(0,212,170,.1);color:var(--teal2);border:1px solid rgba(0,212,170,.28)}.btn-te:hover{background:rgba(0,212,170,.18)}
+.btn-red{background:rgba(239,68,68,.1);color:#F87171;border:1px solid rgba(239,68,68,.28)}.btn-red:hover{background:rgba(239,68,68,.2)}
+
+/* ── Dashboard cards ── */
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:28px 44px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.dc{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:18px;transition:border-color .2s,transform .2s;cursor:default}
+.dc:hover{border-color:var(--border2);transform:translateY(-2px)}
+.dc .dl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:6px}
+.dc .dv{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums}
+.dc .ds{font-size:11px;color:var(--text3);margin-top:3px}
+.c-go{color:var(--gold)}.c-te{color:var(--teal)}.c-pu{color:var(--purple)}.c-or{color:var(--orange)}
+
+/* ── Badge wall ── */
+.section{padding:28px 44px;border-bottom:1px solid var(--border)}
+.section-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:18px;font-weight:700}
+.badge-grid{display:flex;flex-wrap:wrap;gap:10px}
+.badge-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 18px;display:flex;align-items:center;gap:12px;min-width:190px;transition:all .2s}
+.badge-card.unlocked{border-color:var(--gold);background:rgba(245,200,66,.04)}
+.badge-card.locked{opacity:.4;filter:grayscale(.7)}
+.b-icon{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.b-name{font-size:12px;font-weight:700;color:var(--text)}
+.b-req{font-size:10px;color:var(--text3);margin-top:1px}
+.b-title{font-size:10px;color:var(--gold);margin-top:2px;font-style:italic}
+.b-un{font-size:9px;color:var(--green);margin-top:2px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── Scoreboard ── */
+.score-wrap{overflow-x:auto}
+table.st{width:100%;border-collapse:collapse;font-size:13px}
+table.st th{background:var(--bg3);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap}
+table.st td{padding:9px 12px;border-bottom:1px solid var(--border)}
+table.st tr:hover td{background:var(--card)}
+.xi{background:var(--bg3);border:1px solid var(--border);color:var(--gold);font-family:var(--fm);font-size:13px;width:64px;padding:3px 7px;border-radius:5px;text-align:center;outline:none;transition:border-color .18s}
+.xi:focus{border-color:var(--gold)}
+.xm{font-size:10px;color:var(--text3);margin-left:3px}
+.row-tot{font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums}
+.sp{display:inline-block;padding:2px 9px;border-radius:9px;font-size:10px;font-weight:600}
+.sp-done{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.sp-act{background:rgba(245,200,66,.1);color:var(--gold);border:1px solid rgba(245,200,66,.25)}
+.sp-lock{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+
+/* ── Lab page ── */
+.lab-page{padding:36px 44px;display:none}
+.lab-page.show{display:block}
+.sprint-bar{display:flex;align-items:center;gap:9px;padding:9px 14px;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:22px;border:1px solid}
+.sb-easy{background:rgba(0,212,170,.05);border-color:rgba(0,212,170,.2);color:var(--teal2)}
+.sb-hard{background:rgba(245,200,66,.05);border-color:rgba(245,200,66,.2);color:var(--gold2)}
+.sb-boss{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.2);color:#F87171}
+.sb-final{background:rgba(168,85,247,.05);border-color:rgba(168,85,247,.2);color:var(--purple2)}
+.lab-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}
+.lab-hdr-l .ln{font-size:10px;color:var(--orange);letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}
+.lab-hdr-l h2{font-size:clamp(18px,3vw,28px);font-weight:800;color:var(--text);line-height:1.2;margin-bottom:10px}
+.lab-hdr-r{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 18px;text-align:center;flex-shrink:0;min-width:110px}
+.xp-big{font-size:28px;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums}
+.xp-lbl{font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase}
+.feat-row{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+.fb{background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.22);color:var(--purple2);font-size:10px;padding:3px 9px;border-radius:9px;font-weight:600}
+.div{border:none;border-top:1px solid var(--border);margin:22px 0}
+
+/* ── Checkpoint boxes ── */
+.cp{border-radius:var(--r2);padding:22px 26px;margin-bottom:20px;border:1px solid;position:relative}
+.cp-pre{background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.25)}
+.cp-post{background:rgba(0,212,170,.05);border-color:rgba(0,212,170,.25)}
+.cp-bonus{background:rgba(245,200,66,.05);border-color:rgba(245,200,66,.25)}
+.cp-tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.ct-pre{color:var(--blue2)}.ct-post{color:var(--teal2)}.ct-bonus{color:var(--gold2)}
+.cp h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+.cp p{font-size:13px;color:var(--text2);margin-bottom:10px}
+.cp-xpbadge{position:absolute;top:18px;right:18px;font-size:11px;color:var(--gold);background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);padding:2px 9px;border-radius:9px;font-weight:700}
+
+/* ── MCQ ── */
+.mcq-opt{display:flex;align-items:flex-start;gap:9px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:9px 13px;margin-bottom:7px;cursor:pointer;transition:all .14s;font-size:13px;color:var(--text2)}
+.mcq-opt:hover{border-color:var(--blue);color:var(--text)}
+.mcq-opt.correct{background:rgba(34,197,94,.07);border-color:var(--green);color:var(--green)}
+.mcq-opt.wrong{background:rgba(239,68,68,.07);border-color:var(--red);color:var(--red)}
+.mcq-opt.reveal{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.3)}
+.mcq-key{font-size:10px;font-weight:700;width:20px;height:20px;border-radius:4px;background:var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text3);margin-top:1px}
+.q-txt{font-size:13px;font-weight:600;color:var(--text);margin-bottom:9px;margin-top:16px}
+.q-txt:first-child{margin-top:0}
+
+/* ── Match ── */
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+.match-col{display:flex;flex-direction:column;gap:7px}
+.mi{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:9px 13px;font-size:13px;cursor:pointer;transition:all .14s;user-select:none}
+.mi:hover{border-color:var(--border2)}
+.mi.sel{border-color:var(--blue);background:rgba(59,130,246,.07)}
+.mi.matched{border-color:var(--green);background:rgba(34,197,94,.07);color:var(--green);cursor:default}
+.mi.err{border-color:var(--red);background:rgba(239,68,68,.07);animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}30%{transform:translateX(-6px)}70%{transform:translateX(6px)}}
+
+/* ── Bug hunt ── */
+.code-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:12px;counter-reset:lines}
+.bl{font-family:var(--fm);font-size:12px;padding:4px 12px;border-radius:5px;cursor:pointer;transition:background .12s;color:#94A3B8;line-height:1.9;display:flex;gap:10px}
+.bl:hover{background:var(--card2)}
+.bl.sel{background:rgba(239,68,68,.1);border-left:3px solid var(--red);color:var(--red)}
+.bl.is-bug{background:rgba(239,68,68,.1);border-left:3px solid var(--red)}
+.bl.not-bug{background:rgba(34,197,94,.05)}
+.bl-num{color:var(--text3);min-width:22px;text-align:right;flex-shrink:0}
+.bug-explain{margin-top:10px}
+.be{background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.18);border-radius:7px;padding:9px 13px;margin-bottom:7px;font-size:12px;color:var(--text2)}
+.be strong{color:var(--red);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ── Fill in blank ── */
+.fi-wrap{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:var(--r);padding:14px 18px;font-family:var(--fm);font-size:12px;line-height:2.4;margin-bottom:12px}
+.fi-line{color:#94A3B8}
+.blank{background:var(--card2);border:1px solid var(--border2);color:var(--teal2);font-family:var(--fm);font-size:12px;padding:2px 8px;border-radius:5px;width:auto;min-width:120px;outline:none;transition:border-color .16s}
+.blank:focus{border-color:var(--teal)}
+.blank.ok{border-color:var(--green);background:rgba(34,197,94,.07);color:var(--green)}
+.blank.no{border-color:var(--red);background:rgba(239,68,68,.07);color:var(--red)}
+
+/* ── Reflection ── */
+.rl{font-size:10px;color:var(--text3);letter-spacing:.09em;text-transform:uppercase;font-weight:700;margin-bottom:5px}
+.rq{font-size:13px;color:var(--text2);margin-bottom:7px}
+textarea.ra{width:100%;min-height:75px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:10px 13px;color:var(--text);font-family:var(--ff);font-size:13px;resize:vertical;outline:none;transition:border-color .16s;margin-bottom:14px}
+textarea.ra:focus{border-color:var(--teal)}
+
+/* ── Output checklist / mini timer ── */
+ul.cl{list-style:none}
+ul.cl li{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);cursor:pointer;transition:color .12s}
+ul.cl li:last-child{border-bottom:none}
+ul.cl li:hover{color:var(--text)}
+ul.cl li.done{color:var(--text3);text-decoration:line-through}
+.cb{width:17px;height:17px;border-radius:4px;border:1px solid var(--border2);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .14s;color:var(--bg)}
+ul.cl li.done .cb{background:var(--green);border-color:var(--green)}
+.timer-track{height:4px;background:var(--border);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--blue));border-radius:2px;transition:width 1s linear}
+.mini-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:18px 22px;margin-top:14px}
+
+/* ── Exercises ── */
+.ex{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px 24px;margin-bottom:16px}
+.ex-label{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.ex-num{font-size:9px;font-weight:700;color:var(--orange);background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.22);padding:2px 9px;border-radius:9px;letter-spacing:.07em;text-transform:uppercase}
+.ex h4{font-size:13px;font-weight:700;color:var(--text)}
+.ex p{font-size:13px;color:var(--text2);margin-bottom:12px}
+.code-block{background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:var(--r);padding:14px 18px;font-family:var(--fm);font-size:12px;color:#CBD5E1;line-height:1.8;margin:10px 0;white-space:pre-wrap;word-break:break-all}
+
+/* ── Easter egg ── */
+.egg{background:var(--bg3);border:1px dashed var(--purple);border-radius:var(--r2);padding:18px 22px;margin-top:14px}
+.egg-tag{font-size:9px;color:var(--purple2);letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.egg-cmd{font-family:var(--fm);font-size:11px;color:var(--purple2);background:rgba(168,85,247,.08);padding:10px 13px;border-radius:6px;margin-bottom:8px;cursor:pointer;transition:background .14s;word-break:break-all;white-space:pre-wrap}
+.egg-cmd:hover{background:rgba(168,85,247,.16)}
+.egg-mission{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:12px 15px;margin-top:12px}
+.egg-mission .ml{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.egg-mission p{font-size:13px;color:var(--text2)}
+
+/* ── Checklist ── */
+.cl-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:18px 22px}
+.cl-title{font-size:11px;color:var(--green);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+
+/* ── Ref sections ── */
+.ref-page{padding:36px 44px;display:none}
+.ref-page.show{display:block}
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th{background:var(--bg3);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border)}
+.rt td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+.rt tr:nth-child(even) td{background:var(--card)}
+.rt tr:hover td{background:var(--card2)}
+.rt td:first-child{color:var(--orange);font-weight:600;white-space:nowrap}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--card2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 18px;font-size:12px;font-weight:600;color:var(--text);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.t-xp{color:var(--gold);font-size:15px;margin-right:4px}
+
+/* ── Home sections ── */
+#home-sections{display:block}
+#home-sections.hide{display:none}
+
+@media(max-width:860px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .dash{grid-template-columns:1fr 1fr}
+  .hero,.section,.lab-page,.ref-page{padding-left:20px;padding-right:20px}
+  .dash{padding:20px}
+  .lab-hdr{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="s-logo">
+    <div class="tag">Claude Code · ADLC</div>
+    <h2>Lab Guide<br>Python Edition</h2>
+  </div>
+  <div class="xp-widget">
+    <div class="lbl">Total XP</div>
+    <div><span class="val" id="sb-xp">0</span> <span class="sub">/ 1450</span></div>
+    <div class="xp-bar"><div class="xp-fill" id="sb-fill" style="width:0%"></div></div>
+    <div class="badge-pill"><div class="badge-dot" id="sb-dot"></div><span id="sb-badge">No badge yet</span></div>
+  </div>
+  <div class="nav-sec">Navigation</div>
+  <a class="nav-a active" id="nav-home" onclick="showHome()">
+    <span class="nav-num">⌂</span> Dashboard
+  </a>
+  <div class="nav-sec">Labs</div>
+  <div id="nav-labs-container"></div>
+  <div class="nav-sec" style="margin-top:6px">Reference</div>
+  <a class="nav-a" id="nav-feat" onclick="showRef('feat')">
+    <span class="nav-num">◈</span> Features Map
+  </a>
+  <a class="nav-a" id="nav-stack" onclick="showRef('stack')">
+    <span class="nav-num">◉</span> Stack Commands
+  </a>
+  <a class="nav-a" id="nav-scores" onclick="showRef('scores')">
+    <span class="nav-num">◎</span> Scoreboard
+  </a>
+  <div style="margin-top:auto;padding:12px 14px;border-top:1px solid var(--border)">
+    <button id="theme-toggle" onclick="toggleTheme()" style="display:flex;align-items:center;gap:8px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:7px;padding:8px 12px;cursor:pointer;color:var(--text2);font-size:12px;font-weight:600;font-family:var(--ff);transition:all .14s" onmouseover="this.style.borderColor='var(--border2)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">
+      <span id="theme-icon" style="font-size:15px">☀️</span>
+      <span id="theme-label">Light Mode</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- HOME -->
+  <div id="home-sections">
+    <div class="hero">
+      <div class="htag">Claude Code · ADLC · Python Stack</div>
+      <h1>Build <em>TaskFlow</em><br>with Claude Code.</h1>
+      <p>10 hands-on labs. FastAPI · SQLAlchemy · Pytest. Earn XP, unlock badges, and ship a real product using AI-assisted development.</p>
+      <div class="pills">
+        <span class="pill p-or">FastAPI 0.111</span>
+        <span class="pill p-te">SQLAlchemy 2.0</span>
+        <span class="pill p-pu">Claude Code</span>
+        <span class="pill p-go">1450 XP Available</span>
+        <span class="pill p-bl">10 Labs · ~10 hrs</span>
+      </div>
+      <div class="btns">
+        <button class="btn btn-or" onclick="goToLab(1)">Start Lab 01 →</button>
+        <button class="btn btn-gh" onclick="showRef('scores')">Scoreboard</button>
+      </div>
+    </div>
+    <div class="dash">
+      <div class="dc"><div class="dl">Total XP Earned</div><div class="dv c-go" id="d-xp">0</div><div class="ds">of 1450 possible</div></div>
+      <div class="dc"><div class="dl">Labs Completed</div><div class="dv c-te" id="d-labs">0</div><div class="ds">of 10 labs</div></div>
+      <div class="dc"><div class="dl">Current Badge</div><div class="dv c-pu" id="d-badge" style="font-size:15px;line-height:1.5">—</div><div class="ds" id="d-title">Complete Lab 01 first</div></div>
+      <div class="dc"><div class="dl">Bonus Challenges</div><div class="dv c-or" id="d-bonus">0</div><div class="ds">of 10 unlocked</div></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Badge Collection</div>
+      <div class="badge-grid" id="badge-grid"></div>
+    </div>
+  </div>
+
+  <!-- LAB PAGES (built by JS) -->
+  <div id="lab-pages"></div>
+
+  <!-- REF PAGES -->
+  <div class="ref-page" id="ref-feat">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Claude Features × Lab Mapping</h2>
+    <p style="color:var(--text2);margin-bottom:22px;font-size:14px">Every lab teaches specific Claude Code capabilities.</p>
+    <div id="feat-table-wrap"></div>
+  </div>
+  <div class="ref-page" id="ref-stack">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Python Stack Quick Reference</h2>
+    <p style="color:var(--text2);margin-bottom:22px;font-size:14px">Common commands used across all TaskFlow labs.</p>
+    <div id="stack-table-wrap"></div>
+  </div>
+  <div class="ref-page" id="ref-scores">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Self-Assessment Scoreboard</h2>
+    <p style="color:var(--text2);margin-bottom:22px;font-size:14px">Fill in your scores after each lab. All scores are self-assessed — be honest!</p>
+    <div class="score-wrap"><table class="st" id="score-table">
+      <thead><tr>
+        <th>Lab</th><th>Title</th><th>Difficulty</th>
+        <th>Pre /20</th><th>Exercises</th><th>Post /20</th>
+        <th>Bonus /30</th><th>Total</th><th>Status</th>
+      </tr></thead>
+      <tbody id="score-body"></tbody>
+    </table></div>
+    <div style="display:flex;gap:10px;margin-top:14px;align-items:center;flex-wrap:wrap">
+      <button class="btn btn-te" onclick="recalc()">Recalculate</button>
+      <button class="btn btn-gh" onclick="resetScores()">Reset All</button>
+      <span style="font-size:12px;color:var(--text3)">Grand Total: <strong id="grand-tot" style="color:var(--gold)">0</strong> / 1450 XP</span>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<div class="toast" id="toast"><span class="t-xp" id="t-xp"></span><span id="t-msg"></span></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+var BADGES=[
+  {id:'novice',  name:'Novice Prompter', xp:80,   icon:'⚡',bg:'rgba(0,212,170,.12)', c:'#00D4AA', title:'"First spark ignited"',    desc:'Complete your first lab'},
+  {id:'builder', name:'TaskFlow Builder',xp:310,  icon:'🔧',bg:'rgba(59,130,246,.12)',  c:'#3B82F6', title:'"Foundation laid"',         desc:'Labs 01–03 done'},
+  {id:'engineer',name:'Claude Engineer', xp:620,  icon:'⚙', bg:'rgba(168,85,247,.12)', c:'#A855F7', title:'"Backend forged"',           desc:'Labs 01–06 done'},
+  {id:'architect',name:'AI Architect',   xp:1150, icon:'🏛', bg:'rgba(245,200,66,.12)', c:'#F5C842', title:'"Fullstack AI Master"',      desc:'Labs 01–09 done'},
+  {id:'master',  name:'ADLC Master',     xp:1450, icon:'🚀',bg:'rgba(255,107,53,.12)', c:'#FF6B35', title:'"Ship it. You earned it."',  desc:'All 10 labs done'},
+];
+
+var SMETA={easy:'Easy Sprint',hard:'Hard Sprint',boss:'Boss Sprint',final:'Capstone'};
+var SCLASS={easy:'sb-easy d-easy',hard:'sb-hard d-hard',boss:'sb-boss d-boss',final:'sb-final d-final'};
+var SICON={easy:'◎',hard:'◈',boss:'⬡',final:'★'};
+
+var LABS=[
+{id:1,title:'Ideation & Requirements',sprint:'easy',base:80,dur:'45 min',stack:'Claude Code · Markdown · PRD',
+ feats:['Role Prompting','Constraint Injection','Iterative Refinement','Long-Context Reasoning'],
+ pre:{type:'mcq',title:'What do you already know about Claude Code?',
+  qs:[
+   {q:'Claude Code is primarily designed for:',opts:['Casual chat','Agentic CLI coding assistant','Browser automation','Data analysis'],a:1},
+   {q:'In Gherkin format, the three keywords are:',opts:['If/Else/Return','Setup/Run/Assert','Given/When/Then','Start/Do/End'],a:2},
+   {q:'Which MoSCoW label means "nice to have but not essential"?',opts:['Must Have','Should Have','Could Have','Won\'t Have'],a:2},
+   {q:'The ADLC approach embeds AI at:',opts:['Only the coding phase','Only testing','Every SDLC phase','Only deployment'],a:2},
+   {q:'Constraint injection means:',opts:['Adding unit tests','Injecting requirements mid-conversation','Dependency injection in code','SQL injection prevention'],a:1},
+  ]},
+ post:{type:'reflection',title:'Reflect on your PRD quality',
+  qs:['How confident are you that a developer could build from your PRD without clarifying questions? Rate 1–5 and explain why.',
+      'Which Gherkin story was hardest to write? What made it difficult?',
+      'How did using a role prompt ("You are a senior PM...") change the output quality?']},
+ bonus:{cmd:'claude "You are a startup CTO. Review the PRD at docs/PRD.md and identify the 3 biggest technical feasibility risks. For each risk, suggest a mitigation strategy and any PRD changes needed."',
+        mission:'Run the command above. Review Claude\'s concerns. Add 2 new user stories that address them. Save the updated PRD. +30 XP'},
+ exs:[
+  {id:'1A',title:'Generate the PRD',desc:'Transform a one-line brief into a full Product Requirements Document with Gherkin user stories.',
+   cmd:'claude "You are a senior product manager. Brief: \'Task management app for remote engineering teams with real-time collaboration, role-based access, deadline tracking.\' Generate a PRD in Markdown: 20 user stories (Gherkin Given/When/Then), 3 acceptance criteria each, 2 edge cases each. Markdown only, no preamble. Save as docs/PRD.md"'},
+  {id:'1B',title:'Constraint Injection',desc:'Refine the PRD with GDPR, performance, and rate-limiting constraints.',
+   cmd:'claude "Revise docs/PRD.md adding: GDPR Article 17 cascade deletes, FastAPI p99 < 200ms, offline service-worker mode, rate limit 100 req/min per user. For each constraint flag every story impacted and how. Save updated PRD."'},
+  {id:'1C',title:'MoSCoW Prioritisation',desc:'Produce a sprint-ready backlog with FastAPI endpoint hints.',
+   cmd:'claude "Create a MoSCoW backlog from docs/PRD.md. Table columns: Story ID | Title | Priority | Story Points (Fibonacci) | FastAPI Endpoint Hint. Sort Must-first. Save as docs/BACKLOG.md"'},
+ ],
+ checklist:['PRD generated with 20+ Gherkin user stories','Each story has 3 acceptance criteria and 2 edge cases','GDPR and performance constraints reflected','MoSCoW backlog with FastAPI endpoint hints saved','Files saved in taskflow/docs/'],
+},
+
+{id:2,title:'System Architecture',sprint:'hard',base:150,dur:'60 min',stack:'SQLAlchemy 2.0 · Alembic · OpenAPI',
+ feats:['Structured Output','Justification Prompting','Code Generation','SQL DDL Generation','OpenAPI Spec'],
+ pre:{type:'match',title:'Match the architecture concepts',
+  pairs:[
+   ['SQLAlchemy Mapped[]','Async ORM column declaration'],
+   ['Alembic','Database migration tool'],
+   ['Pydantic v2','Request/response validation'],
+   ['FastAPI Depends()','Dependency injection pattern'],
+   ['OpenAPI 3.0','API contract specification'],
+   ['asyncpg','Async PostgreSQL driver'],
+  ]},
+ post:{type:'output',title:'Verify your migration and models work',
+  steps:['alembic upgrade head  →  expect: Running upgrade -> [rev] OK',
+         'python -c "from app.models import Task, User; print(\'Models OK\')"',
+         'curl http://localhost:8000/openapi.json | python -m json.tool  →  expect valid JSON',
+         'Check that Task, User, Team, Comment, Notification tables exist in the DB']},
+ bonus:{cmd:'claude "Review all SQLAlchemy models in app/models/. Identify any missing database indexes that would cause slow queries at 1 million+ task rows. Add the indexes with a comment explaining which query each one optimises."',
+        mission:'Count how many indexes Claude adds. For each one, write a one-line SQL EXPLAIN comment in the migration file. +30 XP'},
+ exs:[
+  {id:'2A',title:'Microservices Design',desc:'Claude Code designs the 3-service FastAPI architecture with justified technology choices.',
+   cmd:'claude "Design a 3-service FastAPI microservices architecture for TaskFlow using docs/PRD.md. Per service: async router signatures, Pydantic v2 schemas, inter-service communication pattern (REST vs Redis pub/sub), Python libraries with justification. Save as docs/ARCHITECTURE.md"'},
+  {id:'2B',title:'SQLAlchemy Models',desc:'Generate async SQLAlchemy 2.0 models with GDPR cascade rules and performance indexes.',
+   cmd:'claude "Generate SQLAlchemy 2.0 async Mapped[] models for: User, Team, Task, Comment, Notification. Include: GDPR ondelete=SET NULL, indexes for common query patterns, Python enums for TaskStatus/Priority/UserRole, Alembic migration script. Save models to app/models/ and migration to migrations/"'},
+  {id:'2C',title:'OpenAPI Specification',desc:'Produce the API contract that frontend and tests will both target.',
+   cmd:'claude "Generate complete OpenAPI 3.0 YAML for the Task Service: all CRUD endpoints, JWT Bearer auth scheme, cursor pagination, Pydantic error schemas, 3 examples per endpoint. Validate it parses correctly. Save as docs/openapi.yaml"'},
+ ],
+ checklist:['3-service architecture documented with justification','SQLAlchemy 2.0 Mapped[] models for all 5 entities','Alembic migration runs without errors','OpenAPI 3.0 YAML validates correctly','Files in taskflow/app/models/ and taskflow/docs/'],
+},
+
+{id:3,title:'Frontend Development',sprint:'easy',base:80,dur:'75 min',stack:'Jinja2 · HTMX · Tailwind CSS',
+ feats:['Component Generation','Accessibility Audit','WCAG Fix Generation','HTMX Patterns','Multi-Turn Refinement'],
+ pre:{type:'bug',title:'Spot the 3 bugs in this Jinja2 template',
+  lines:['{% extends "base.html" %}','{% block content %}','<div class="task-card">','  <img src="{{ task.avatar }}" />','  <h3>{{ task.title }}</h3>','  <span style="color:red">OVERDUE</span>','  <button hx-post="/tasks/{{ task.id }}/done">','    Mark Done','  </button>','</div>','{% endblock %}'],
+  bugs:[3,5,6],
+  explains:['Line 4 — img missing alt attribute: WCAG 1.1.1 failure, screen readers cannot describe the image','Line 6 — inline style colour: insufficient contrast ratio, not theme-aware, fails WCAG 1.4.3','Line 7 — HTMX button missing hx-swap and hx-target: the partial response has nowhere to render']},
+ post:{type:'mini',title:'10-minute timed challenge: add dark mode',secs:600,
+  task:'Add Tailwind dark: prefix variants to your TaskCard template so it renders correctly in both light and dark mode. Include the dark mode toggle button in base.html that sets class="dark" on <html>.',
+  criteria:['dark: class prefix used on at least 3 elements','Toggle button updates <html class="dark">','No inline styles introduced','Template renders without Jinja2 errors']},
+ bonus:{cmd:'claude "Run a WCAG 2.1 AA accessibility audit on all HTML templates in the templates/ directory. List every violation: WCAG rule ID, severity (Critical/Major/Minor), user impact, and a corrected Jinja2 code snippet. Then automatically fix all Critical violations."',
+        mission:'Run the audit. Verify Claude fixes every Critical violation. Re-run and confirm zero Critical issues remain. +30 XP'},
+ exs:[
+  {id:'3A',title:'TaskCard Component',desc:'Generate the Jinja2 TaskCard with HTMX status toggle and Tailwind styling.',
+   cmd:'claude "Generate a Jinja2 TaskCard template: title, assignee avatar (with alt text), priority badge (colour-coded High/Medium/Low), due date (red class if overdue), HTMX hx-patch toggle button with hx-swap and hx-target. Tailwind CSS classes. Include the FastAPI HTMLResponse route."'},
+  {id:'3B',title:'HTMX Kanban Board',desc:'Build the Kanban board with out-of-band HTMX column count updates.',
+   cmd:'claude "Generate a Jinja2 Kanban board: 3 columns (To Do, In Progress, Done). Cards use hx-post to move columns with hx-swap=outerHTML and hx-target OOB for column count update. Include the FastAPI partial HTML endpoint that handles column moves."'},
+  {id:'3C',title:'WCAG Accessibility Audit',desc:'Claude Code reviews every template and auto-fixes Critical violations.',
+   cmd:'claude "WCAG 2.1 AA audit of templates/ directory. For each violation: rule ID, severity, screen-reader impact, fixed Jinja2 code. Automatically apply fixes for all Critical issues and report what was changed."'},
+ ],
+ checklist:['TaskCard with HTMX toggle renders correctly','Kanban board with OOB column count update working','WCAG audit completed, zero Critical violations','Dark mode toggle added to base.html','Templates saved in taskflow/templates/'],
+},
+
+{id:4,title:'Backend with FastAPI',sprint:'hard',base:160,dur:'90 min',stack:'FastAPI · JWT · WebSocket · slowapi',
+ feats:['Code Generation','Security Review (OWASP)','JWT Auth Design','WebSocket Pattern','Agentic Refactoring','Dependency Injection'],
+ pre:{type:'fillin',title:'Complete the FastAPI route skeleton',
+  lines:[
+   {t:'@router.get("/", response_model=',b:'TaskListResponse',h:'Pydantic response model name',a:')'},
+   {t:'async def list_tasks(db: ',b:'AsyncSession',h:'SQLAlchemy async session type',a:' = Depends(get_async_db),'},
+   {t:'    current_user: User = Depends(',b:'get_current_active_user',h:'Auth dependency function name',a:'),'},
+   {t:'    cursor: ',b:'str | None',h:'Optional string type (Python 3.10+)',a:' = Query(None)):'},
+  ]},
+ post:{type:'output',title:'Verify your API endpoints respond correctly',
+  steps:['curl -X POST localhost:8000/auth/register -H "Content-Type: application/json" -d \'{"email":"t@t.com","password":"Test123!"}\' → expect 201',
+         'curl -X POST localhost:8000/auth/login ... → copy the access_token',
+         'curl -H "Authorization: Bearer <token>" localhost:8000/api/v1/tasks → expect 200 {"items":[]}',
+         'curl -X POST localhost:8000/api/v1/tasks -H "Authorization: Bearer <token>" -d \'{"title":"Test"}\' → expect 201']},
+ bonus:{cmd:'claude "Run an OWASP Top 10 security review of app/routers/ and app/auth/. For each vulnerability: name, severity (Critical/High/Medium/Low), attack vector in FastAPI context, and a patched code snippet. Automatically fix all Critical and High severity issues."',
+        mission:'Apply all fixes. Re-run the review and confirm zero Critical/High findings. Document each fix in a SECURITY.md file. +30 XP'},
+ exs:[
+  {id:'4A',title:'Async CRUD Router',desc:'Full FastAPI async task router with cursor pagination, filtering, soft delete.',
+   cmd:'claude "Generate complete FastAPI async /api/v1/tasks router: GET with cursor pagination and status/priority/assignee filters, POST with Pydantic v2 validation returning 201, PATCH partial update, DELETE soft-delete with GDPR cascade. Use AsyncSession via Depends(get_async_db). Raise 403/404 with HTTPException."'},
+  {id:'4B',title:'JWT Auth + Refresh Tokens',desc:'Access + refresh tokens with Redis blacklist and HTTPOnly cookies.',
+   cmd:'claude "Implement FastAPI JWT auth: POST /auth/register and /auth/login, access token 15min + refresh token 7 days with rotation, HTTPOnly cookie delivery, Redis token blacklist on logout, get_current_active_user Depends() for route protection. Use python-jose and passlib[bcrypt]."'},
+  {id:'4C',title:'OWASP Security Review',desc:'Claude Code audits and auto-patches all Critical/High security issues.',
+   cmd:'claude "OWASP Top 10 review of app/ directory. Per vulnerability: name, severity, FastAPI-specific attack vector, patched code. Add slowapi rate limiting, CORS lockdown with allowed origins, SQLAlchemy parameterised queries. Fix all Critical and High issues automatically."'},
+  {id:'4D',title:'WebSocket Real-Time',desc:'Team room broadcast with Redis pub/sub and user presence tracking.',
+   cmd:'claude "Add FastAPI WebSocket endpoint GET /ws/tasks/{team_id}: ConnectionManager for team rooms, broadcast JSON on task create/update/delete, user presence (online/away/offline) in Redis, reconnect with exponential backoff in vanilla JS. Handle disconnect gracefully."'},
+ ],
+ checklist:['Async CRUD router with cursor pagination working','JWT auth with refresh token rotation and Redis blacklist','OWASP review done — zero Critical/High issues remaining','WebSocket broadcast working for team rooms','Rate limiting and CORS configured'],
+},
+
+{id:5,title:'Testing with Pytest',sprint:'easy',base:90,dur:'60 min',stack:'Pytest · HTTPX · pytest-cov · Playwright',
+ feats:['Test Generation','Coverage Gap Analysis','Edge Case Discovery','Fixture Generation','Parametrize Pattern'],
+ pre:{type:'bug',title:'Why will this test always pass — even when the code is broken?',
+  lines:['import pytest','','@pytest.mark.asyncio','async def test_create_task(async_client):','    resp = await async_client.post("/api/v1/tasks",','        json={"title": "My task"})','    data = resp.json()','    assert data is not None','    assert "id" in data','    print("Task created:", data)'],
+  bugs:[7,8],
+  explains:['Line 8 — No status code check: a 422 validation error or 500 server error also returns JSON with a body, so assert data is not None passes even on failure','Line 9 — assert "id" in data passes for {"detail":"Not authenticated"} too, since it just checks key existence not that the value is a real UUID from a created task']},
+ post:{type:'output',title:'Verify your coverage gate passes',
+  steps:['pytest --asyncio-mode=auto --cov=app --cov-report=term-missing',
+         'Confirm overall coverage line shows: TOTAL ... XX%  →  must be >= 80%',
+         'Identify the 2 files with lowest coverage from the report',
+         'Run: claude "Generate Pytest tests to bring coverage of [filename] to 90%+" and re-run']},
+ bonus:{cmd:'claude "Analyse the coverage report at coverage.xml. Find the 5 highest-risk uncovered code paths in app/. For each path: risk rating (Critical/High/Medium), why it is risky in async FastAPI, and a complete Pytest test that exercises it."',
+        mission:'Implement all 5 tests Claude generates. Temporarily break each implementation to confirm the test catches the failure. +30 XP'},
+ exs:[
+  {id:'5A',title:'conftest.py + Fixtures',desc:'Full async test setup: HTTPX client, SQLite isolation, Factory Boy, auth headers.',
+   cmd:'claude "Generate conftest.py for async FastAPI testing: async_engine with SQLite aiosqlite in-memory, async_db AsyncSession with rollback after each test, async_client HTTPX with FastAPI dependency override, UserFactory and TaskFactory via Factory Boy, auth_headers fixture returning Bearer token dict."'},
+  {id:'5B',title:'Integration Tests',desc:'Full CRUD coverage with auth scenarios, validation, and pagination edge cases.',
+   cmd:'claude "Write pytest async integration tests for /api/v1/tasks: all CRUD happy paths with status code assertions, auth scenarios (missing/expired/wrong-scope token), 422 Pydantic validation errors, cursor pagination first/last/empty page, concurrent PATCH optimistic lock. Use @pytest.mark.parametrize for auth scenarios."'},
+  {id:'5C',title:'Coverage Gap Analysis',desc:'Feed the coverage report to Claude Code and generate the missing high-risk tests.',
+   cmd:'claude "Read coverage.xml. Identify the 5 highest-risk uncovered code paths. Per path: risk rating, async FastAPI context, complete Pytest test. Prioritise auth middleware paths and DB transaction rollback handlers."'},
+ ],
+ checklist:['conftest.py with async fixtures and Factory Boy factories','Integration tests for all CRUD endpoints (80%+ coverage)','Coverage gap analysis done, missing tests added','Playwright E2E happy path test passing','Tests saved in taskflow/tests/'],
+},
+
+{id:6,title:'AI-Powered Code Review',sprint:'hard',base:150,dur:'45 min',stack:'Ruff · mypy · Claude Code review',
+ feats:['Bug Detection','Performance Analysis','SOLID Review','Anti-Pattern ID','Async Python Review','Pydantic Type Safety'],
+ pre:{type:'mcq',title:'OWASP and Python async security check',
+  qs:[
+   {q:'A FastAPI route does: db.query(User).filter(User.email == email). What OWASP risk if email is not validated?',opts:['A02 Cryptographic Failures','A03 Injection','A07 Auth Failures','A09 Logging Failures'],a:1},
+   {q:'What causes N+1 queries in SQLAlchemy?',opts:['Using selectinload()','Accessing lazy-loaded relationships in a loop','Using joinedload()','Using limit()'],a:1},
+   {q:'A Pydantic schema returns password_hash in a response model. Which OWASP risk?',opts:['A01 Broken Access Control','A02 Cryptographic Failures','A03 Injection','A05 Misconfiguration'],a:0},
+   {q:'An async FastAPI handler calls time.sleep(5). What is the problem?',opts:['Minor style issue only','Blocks the entire asyncio event loop','Only works on Python 3.12+','Causes a memory leak'],a:1},
+   {q:'Which ruff command auto-fixes all fixable linting issues?',opts:['ruff check .','ruff fix .','ruff check --fix .','ruff format .'],a:2},
+  ]},
+ post:{type:'reflection',title:'Code review retrospective',
+  qs:['Rate your code quality before this lab vs after Claude\'s review (1–5 each). What was the single biggest surprise finding?',
+      'Which bug category was hardest to spot manually: async pitfalls, N+1 queries, or type safety? Why?',
+      'What one coding habit will you change permanently as a result of this lab?']},
+ bonus:{cmd:'claude "Run ruff check app/ and mypy app/ --strict. For every error found: explain WHY it matters in a production FastAPI service (not just what the rule says). Then fix all errors automatically."',
+        mission:'Record the error counts before and after. Write a 3-sentence summary of the most important things you learned from the linter output. +30 XP'},
+ exs:[
+  {id:'6A',title:'Async Bug Detection',desc:'Claude Code hunts for missing awaits, N+1 queries, exception swallowing, race conditions.',
+   cmd:'claude "Senior FastAPI code review of app/routers/tasks.py: find missing await on coroutines, N+1 SQLAlchemy lazy-load patterns, exception handlers that swallow errors silently, concurrent state mutation risks, connection pool exhaustion. Provide severity rating and fixed code for each issue."'},
+  {id:'6B',title:'SQLAlchemy Performance',desc:'Optimise queries with eager loading, indexes, and proper async patterns.',
+   cmd:'claude "Review SQLAlchemy queries in app/services/. Find: missing selectinload/joinedload causing N+1 queries, full table scans on unindexed columns, missing pagination on unbounded queries, synchronous calls inside async functions. Provide optimised query with explain-plan comments."'},
+  {id:'6C',title:'Pydantic Type Safety',desc:'Find response models leaking internal fields and missing validators.',
+   cmd:'claude "Review Pydantic models in app/schemas/. Find: response models exposing password_hash or internal IDs, missing field_validator for email/enum types, unsafe use of Any type, missing model_config settings. Provide corrected Pydantic v2 models."'},
+ ],
+ checklist:['Async bug review done on all route handlers','SQLAlchemy N+1 queries identified and fixed with eager loading','Pydantic models audited — no internal fields exposed','ruff check and mypy --strict both pass with zero errors','Review notes saved in taskflow/reviews/'],
+},
+
+{id:7,title:'Documentation',sprint:'easy',base:80,dur:'45 min',stack:'Sphinx · Google docstrings · ADR',
+ feats:['Docstring Generation','Technical Writing','ADR Drafting','README Generation','Sphinx autodoc'],
+ pre:{type:'fillin',title:'Fix the incomplete Google-style docstring',
+  lines:[
+   {t:'def create_task(title: str, priority: str) -> Task:',b:'',h:'',a:''},
+   {t:'    """Create a new task in the database.',b:'',h:'',a:''},
+   {t:'    ',b:'Args',h:'Google docstring section for parameters',a:':'},
+   {t:'        title (str): The task title, max 255 chars.',b:'',h:'',a:''},
+   {t:'        priority (',b:'str',h:'Type annotation for priority param',a:'): low, medium, or high.'},
+   {t:'    ',b:'Returns',h:'Google section for the return value',a:':'},
+   {t:'        Task: The newly created SQLAlchemy Task object.',b:'',h:'',a:''},
+   {t:'    ',b:'Raises',h:'Google section for exceptions raised',a:':'},
+   {t:'        ValueError: If priority is not a valid value.',b:'',h:'',a:''},
+   {t:'    """',b:'',h:'',a:''},
+  ]},
+ post:{type:'output',title:'Verify Sphinx builds without warnings',
+  steps:['cd docs && sphinx-build -b html . _build/html',
+         'Confirm: "build succeeded" with 0 warnings',
+         'Open _build/html/index.html — verify module autodocs render',
+         'Confirm at least 3 modules appear in the API reference section']},
+ bonus:{cmd:'claude "Generate a CHANGELOG.md for the TaskFlow project based on git log output. Follow Keep a Changelog format (https://keepachangelog.com). Group by Added/Changed/Fixed/Security. Add an [Unreleased] section."',
+        mission:'Generate the CHANGELOG. Add at least 3 [Unreleased] entries from features you built in Labs 1–6. Commit everything with a conventional commit message (feat:/fix:/docs:). +30 XP'},
+ exs:[
+  {id:'7A',title:'Google-Style Docstrings',desc:'Claude Code adds complete docstrings to all router and service files.',
+   cmd:'claude "Add Google-style docstrings to every public function in app/routers/ and app/services/. Include: one-line summary, Args section with types and descriptions, Returns section, Raises for all HTTPException cases, and a realistic Example showing an HTTPX test call with expected response."'},
+  {id:'7B',title:'Architecture Decision Record',desc:'Document the FastAPI technology choice for future engineers.',
+   cmd:'claude "Write an ADR using the MADR template for the decision to use FastAPI over Django REST Framework for TaskFlow. Sections: title, status (Accepted), context, decision, consequences (positive/negative/neutral). Detailed enough for a Python developer onboarding on Day 1. Save as docs/adr/0001-fastapi-over-drf.md"'},
+  {id:'7C',title:'README Generation',desc:'Professional project README with all standard sections.',
+   cmd:'claude "Generate README.md for TaskFlow: build/coverage/python version/license badges, feature list, 5-step quickstart, detailed installation (venv + Docker options), environment variable reference table, API quick reference from docs/openapi.yaml, contributing guide, license section."'},
+ ],
+ checklist:['Google-style docstrings on all routers and services','ADR for FastAPI choice saved in docs/adr/','Sphinx build passes with 0 warnings','README with badges and quickstart generated','Files committed to taskflow/docs/'],
+},
+
+{id:8,title:'Claude API Integration',sprint:'hard',base:160,dur:'60 min',stack:'anthropic SDK · Pydantic · async',
+ feats:['Anthropic Python SDK','System Prompts','Structured JSON Output','Multi-Turn Conversations','Async API Calls','Streaming'],
+ pre:{type:'match',title:'Match the Anthropic Python SDK concepts',
+  pairs:[
+   ['client.messages.create()','Makes an API call to Claude'],
+   ['system= parameter','Sets Claude\'s persona and rules'],
+   ['max_tokens=','Limits the response length'],
+   ['message.content[0].text','Extracts text from the response'],
+   ['AsyncAnthropic()','Async client for use with FastAPI'],
+   ['model= parameter','Selects which Claude model to use'],
+  ]},
+ post:{type:'mini',title:'15-minute challenge: add streaming to the summariser',secs:900,
+  task:'Modify the task summariser endpoint to stream the response token-by-token. Use client.messages.stream() and return a FastAPI StreamingResponse with text/event-stream content type.',
+  criteria:['Uses async with client.messages.stream() context manager','FastAPI endpoint returns StreamingResponse','Content-Type header is text/event-stream','Frontend receives tokens progressively, not buffered']},
+ bonus:{cmd:'claude "Add a Smart Reply feature to TaskFlow: when a user views a task detail page, Claude suggests 3 relevant next actions based on the task title, description, due date, and current status. Implement as POST /ai/suggest-actions FastAPI endpoint and an HTMX partial template."',
+        mission:'Implement Smart Reply end-to-end. Test it with 5 different task types. Evaluate the suggestion quality and add one system-prompt refinement. +30 XP'},
+ exs:[
+  {id:'8A',title:'Async Task Summariser',desc:'Build the AI summariser using AsyncAnthropic inside a FastAPI endpoint.',
+   cmd:'claude "Build POST /ai/summarise/{task_id} endpoint: use anthropic.AsyncAnthropic(), fetch task and comments from DB, call claude-sonnet-4-20250514 with system prompt instructing a 3-bullet engineering PM summary, return JSON {summary: str}. Fully non-blocking async."'},
+  {id:'8B',title:'Priority Predictor',desc:'Structured JSON output from Claude with Pydantic validation.',
+   cmd:'claude "Build POST /ai/predict-priority. System prompt must enforce JSON output only: {predicted_priority: 1-5, confidence: 0.0-1.0, reasoning: str max 200 chars, deadline_shift_days: int}. Validate Claude\'s response with a Pydantic model. Handle JSON parse errors with a fallback response."'},
+  {id:'8C',title:'NL Task Parser',desc:'Multi-turn conversation in Redis for ambiguity resolution.',
+   cmd:'claude "Build POST /ai/parse-task: user sends plain-text task description, Claude returns a TaskCreate Pydantic model. If the assignee name is ambiguous, store the conversation turn in Redis and return a clarification question as JSON {clarification: str}. Continue conversation until fully parsed."'},
+ ],
+ checklist:['Async summariser working with real task data','Priority predictor returning Pydantic-validated JSON','NL parser with multi-turn Redis conversation','Streaming endpoint returning text/event-stream','All AI code saved in taskflow/app/ai/'],
+},
+
+{id:9,title:'MCP Integration',sprint:'boss',base:200,dur:'90 min',stack:'MCP · GitHub · Slack · PostgreSQL',
+ feats:['MCP Protocol','Tool Use','Custom MCP Server','GitHub Automation','DB Orchestration','Slack Integration'],
+ pre:{type:'bug',title:'Find why this MCP config will not connect',
+  lines:['{','  "mcpServers": {','    "github": {','      "command": "npx",','      "args": ["@modelcontextprotocol/server-github"],','      "env": {','        "GITHUB_TOKEN": "ghp_abc123"','      }','    }','  }','}'],
+  bugs:[4,6],
+  explains:['Line 5 — Missing -y flag: npx without -y prompts interactively for package install confirmation, hanging the server process indefinitely','Line 7 — Wrong env key: the GitHub MCP server requires GITHUB_PERSONAL_ACCESS_TOKEN specifically — GITHUB_TOKEN is not recognised and auth silently fails']},
+ post:{type:'output',title:'Verify your MCP tool calls actually execute',
+  steps:['claude --mcp-config .mcp/config.json (opens Claude Code with MCP servers)',
+         'Type: "List all open issues in my GitHub repo" — confirm a real API call is made',
+         'Type: "Query the TaskFlow database for all tasks due today" — confirm SQL executes',
+         'Type: "Send a test Slack message to #general saying MCP is live" — verify delivery']},
+ bonus:{cmd:'claude --mcp-config .mcp/config.json "Using GitHub, Postgres, and Slack tools: 1) Query the DB for tasks overdue by more than 2 days 2) Create a GitHub issue for each one titled [OVERDUE] {task title} 3) Post a summary to #standup with total count and top 3 most overdue. Do this as a single automated workflow."',
+        mission:'Run the full orchestration. Log all tool calls Claude makes. Identify any ambiguous step and improve the prompt to eliminate clarification. +30 XP'},
+ exs:[
+  {id:'9A',title:'MCP Server Configuration',desc:'Configure GitHub, PostgreSQL, and Slack MCP servers.',
+   cmd:'Create .mcp/config.json with: github server (npx -y @modelcontextprotocol/server-github, env GITHUB_PERSONAL_ACCESS_TOKEN), postgres server (npx -y @modelcontextprotocol/server-postgres, env POSTGRES_URL=postgresql://localhost/taskflow), slack server (npx -y @modelcontextprotocol/server-slack, env SLACK_BOT_TOKEN)'},
+  {id:'9B',title:'GitHub Automation',desc:'Drive GitHub via natural language in Claude Code.',
+   cmd:'claude --mcp-config .mcp/config.json "Create a GitHub issue for the N+1 query bug from Lab 06. Assign it to me, label it bug and high-priority, add it to the v1.0 milestone. Then list all open PRs that have been waiting for review for more than 3 days."'},
+  {id:'9C',title:'DB + Slack Orchestration',desc:'Multi-tool workflow: query PostgreSQL, compose messages, post to Slack.',
+   cmd:'claude --mcp-config .mcp/config.json "Query the TaskFlow PostgreSQL DB for all tasks overdue by more than 2 days grouped by assignee. For each assignee: send a personalised Slack DM listing their overdue tasks. Then post a summary count to the #standup channel."'},
+  {id:'9D',title:'Custom MCP Bridge Server',desc:'Build a Node.js MCP server wrapping the TaskFlow FastAPI internal API.',
+   cmd:'claude "Build a Node.js MCP server in taskflow-mcp-bridge/index.js using @modelcontextprotocol/sdk and StdioServerTransport. Expose tools: create_task, list_overdue_tasks, update_task_status. Each tool calls the FastAPI API at localhost:8000 using the API token from env TASKFLOW_API_TOKEN."'},
+ ],
+ checklist:['MCP config with GitHub, Postgres, and Slack servers working','GitHub issue created via natural language command','Overdue task Slack DMs delivered successfully','Custom FastAPI MCP bridge server built and tested','Full DB → GitHub Issues → Slack workflow automated'],
+},
+
+{id:10,title:'Capstone Sprint',sprint:'final',base:300,dur:'120 min',stack:'Full Stack · All Features',
+ feats:['All Claude Features','Timed Sprint','End-to-End Build','Code Review','MCP Delivery','Live Demo'],
+ pre:{type:'reflection',title:'Capstone readiness self-assessment',
+  qs:['Rate your confidence in each area 1–5: FastAPI routing, SQLAlchemy async, Pytest fixtures, Claude API integration, MCP tool use. Where are the gaps and how will you address them?',
+      'Before starting, describe in 3 sentences how you would architect the Smart Daily Digest feature without Claude Code. What would take the longest?',
+      'Which Claude Code prompt pattern has been most useful across labs 1–9? Describe a specific example.']},
+ post:{type:'reflection',title:'Capstone retrospective',
+  qs:['Walk through your completed feature end-to-end: ideation → architecture → code → tests → docs → MCP delivery. Which phase benefited most from Claude Code?',
+      'Pick any 20 consecutive lines of Claude-generated code in your project. Explain every line as if teaching a junior developer. What did you have to look up?',
+      'What would you build next with Claude Code? Write a one-paragraph pitch for the next TaskFlow feature.']},
+ bonus:{cmd:'claude "You are a senior engineer. Review the entire TaskFlow project: all files in app/, tests/, and docs/. Provide: top 3 architecture concerns, top 3 security risks, top 3 performance bottlenecks, and a prioritised action list. Be specific with file names and line numbers."',
+        mission:'Address every Critical finding from the review. Then record a 2-minute demo walkthrough of the Smart Daily Digest feature as if presenting to a stakeholder. +30 XP'},
+ exs:[
+  {id:'10A',title:'Ideation Phase (15 min)',desc:'Generate stories and architecture for the Smart Daily Digest.',
+   cmd:'claude "Sprint mode — 15 minutes. Generate 5 user stories for a Smart Daily Digest feature: Celery beat task at 9AM, Claude API ranks top 3 priority tasks, overdue task nudge with suggestions, Slack delivery via MCP. Gherkin format + FastAPI endpoint hints. Save to docs/DIGEST_PRD.md"'},
+  {id:'10B',title:'Implementation Phase (45 min)',desc:'Build the Celery task, Claude API integration, and Slack delivery.',
+   cmd:'claude "Implement Smart Daily Digest: app/tasks/digest.py Celery shared_task, anthropic.Anthropic() sync client for task ranking and message composition, Slack delivery via MCP config. Include retry logic with max_retries=3 and proper error logging. Save all new files."'},
+  {id:'10C',title:'Test + Doc Phase (30 min)',desc:'Generate tests and documentation for the new feature.',
+   cmd:'claude "Generate Pytest tests for app/tasks/digest.py: mock anthropic.Anthropic() client, test Celery task with CELERY_TASK_ALWAYS_EAGER=True setting, verify Slack MCP tool call is made with correct parameters. Then add Google-style docstrings to all new functions."'},
+  {id:'10D',title:'Review + Demo (30 min)',desc:'Final code review and demo preparation.',
+   cmd:'claude "Final code review of all files added in Lab 10. Zero tolerance for Critical or High severity issues. Fix anything found. Then generate a 5-slide presentation outline in Markdown for a 5-minute stakeholder demo of the Smart Daily Digest feature."'},
+ ],
+ checklist:['Celery beat task triggers correctly at scheduled time','Claude API ranks tasks and composes personalised digest message','Slack delivery via MCP working end-to-end','80%+ test coverage on all new Lab 10 code','Google-style docstrings on all new functions','Zero Critical/High code review findings','Can explain every line of AI-generated code to a teammate'],
+},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+var S = loadState();
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem('adlc2')||'null')||mkState(); }
+  catch(e){ return mkState(); }
+}
+function mkState(){ return {xp:0,labs:0,bonus:0,scores:{},checks:{},reflections:{},matchSel:{},bugSel:{},fiDone:{}}; }
+function save(){ try{ localStorage.setItem('adlc2',JSON.stringify(S)); }catch(e){} }
+
+// ── BUILD ────────────────────────────────────────────────────────────────────
+window.onload = function(){
+  buildNavLabs();
+  buildLabPages();
+  buildScoreRows();
+  buildBadgeWall();
+  buildFeatTable();
+  buildStackTable();
+  recalc();
+};
+
+function buildNavLabs(){
+  var c = document.getElementById('nav-labs-container');
+  var html = '';
+  LABS.forEach(function(lab){
+    var sc = S.scores[lab.id]||{};
+    var done = (sc.total||0) >= Math.floor(lab.base*0.5);
+    var dclass = {easy:'d-easy',hard:'d-hard',boss:'d-boss',final:'d-final'}[lab.sprint];
+    html += '<a class="nav-a" id="nav-lab-'+lab.id+'" onclick="goToLab('+lab.id+')">'
+      +'<span class="nav-num" style="font-size:9px">'+pad(lab.id)+'</span>'
+      +'<span style="flex:1;font-size:12px">'+lab.title+'</span>'
+      +'<span class="dpill '+dclass+'">'+SICON[lab.sprint]+'</span>'
+      +(done?'<span class="nav-done">✓</span>':'<span class="nav-xp">'+lab.base+'</span>')
+      +'</a>';
+  });
+  c.innerHTML = html;
+}
+
+function buildLabPages(){
+  var c = document.getElementById('lab-pages');
+  var html = '';
+  LABS.forEach(function(lab){
+    html += '<div class="lab-page" id="lab-page-'+lab.id+'">';
+    html += buildLabHTML(lab);
+    html += '</div>';
+  });
+  c.innerHTML = html;
+}
+
+function buildLabHTML(lab){
+  var sclass = {easy:'sb-easy',hard:'sb-hard',boss:'sb-boss',final:'sb-final'}[lab.sprint];
+  var sdesc = {easy:'Recovery sprint — breathe, build, consolidate.',hard:'Hard sprint — push your limits.',boss:'Boss sprint — maximum intensity.',final:'Final capstone — everything you\'ve learned.'}[lab.sprint];
+  var maxXP = lab.base + 70;
+  var h = '';
+  h += '<div class="sprint-bar '+sclass+'">'+SICON[lab.sprint]+' '+SMETA[lab.sprint]+' — '+sdesc+'</div>';
+  h += '<div class="lab-hdr">';
+  h += '<div class="lab-hdr-l">';
+  h += '<div class="ln">Lab '+pad(lab.id)+' — '+lab.stack+'</div>';
+  h += '<h2>'+lab.title+'</h2>';
+  h += '<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px">';
+  h += '<span class="pill p-or">⏱ '+lab.dur+'</span>';
+  h += '<span class="dpill '+{easy:'d-easy',hard:'d-hard',boss:'d-boss',final:'d-final'}[lab.sprint]+'" style="padding:4px 10px;border-radius:10px">'+SMETA[lab.sprint]+'</span>';
+  h += '</div></div>';
+  h += '<div class="lab-hdr-r"><div class="xp-big">'+lab.base+'</div><div class="xp-lbl">base XP</div><div style="font-size:10px;color:var(--text3);margin-top:4px">'+maxXP+' max</div></div>';
+  h += '</div>';
+  h += '<div class="feat-row">'+lab.feats.map(function(f){ return '<span class="fb">'+f+'</span>'; }).join('')+'</div>';
+  h += '<div class="div"></div>';
+  h += buildPre(lab);
+  h += '<div class="div"></div>';
+  h += '<h3 style="font-size:11px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Exercises</h3>';
+  lab.exs.forEach(function(ex){ h += buildEx(lab.id, ex); });
+  h += '<div class="div"></div>';
+  h += buildPost(lab);
+  h += '<div class="div"></div>';
+  h += buildBonus(lab);
+  h += '<div class="div"></div>';
+  h += buildChecklist(lab);
+  h += '<div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap">';
+  if(lab.id>1) h += '<button class="btn btn-gh" onclick="goToLab('+(lab.id-1)+')">← Lab '+(lab.id-1)+'</button>';
+  h += '<button class="btn btn-or" onclick="goScores()">Update Score →</button>';
+  if(lab.id<10) h += '<button class="btn btn-gh" onclick="goToLab('+(lab.id+1)+')">Lab '+(lab.id+1)+' →</button>';
+  h += '</div>';
+  return h;
+}
+
+// ── PRE CHECKPOINT ───────────────────────────────────────────────────────────
+function buildPre(lab){
+  var p = lab.pre;
+  var inner = '';
+
+  if(p.type==='mcq'){
+    inner = buildMCQ(lab.id, p.qs, 'pre');
+  } else if(p.type==='match'){
+    inner = buildMatch(lab.id, p.pairs);
+  } else if(p.type==='bug'){
+    inner = buildBug(lab.id, p.lines, p.bugs, p.explains, 'pre');
+  } else if(p.type==='fillin'){
+    inner = buildFillIn(lab.id, p.lines, 'pre');
+  } else if(p.type==='reflection'){
+    inner = buildReflection(lab.id, p.qs, 'pre');
+  }
+
+  return '<div class="cp cp-pre">'
+    +'<div class="cp-tag ct-pre">◎ Pre-Checkpoint</div>'
+    +'<div class="cp-xpbadge">+20 XP</div>'
+    +'<h4>'+p.title+'</h4>'
+    +inner+'</div>';
+}
+
+// ── POST CHECKPOINT ──────────────────────────────────────────────────────────
+function buildPost(lab){
+  var p = lab.post;
+  var inner = '';
+
+  if(p.type==='output'){
+    inner = '<p>Run each command and tick when it passes.</p>';
+    inner += '<ul class="cl" id="out-'+lab.id+'">';
+    p.steps.forEach(function(s,i){
+      var key = 'out-'+lab.id+'-'+i;
+      var done = S.checks[key];
+      inner += '<li id="'+key+'" class="'+(done?'done':'')+'" onclick="toggleCheck(\''+key+'\')">'
+        +'<div class="cb">'+(done?'✓':'')+'</div>'
+        +'<code style="font-family:var(--fm);font-size:12px">'+esc(s)+'</code></li>';
+    });
+    inner += '</ul>';
+  } else if(p.type==='mini'){
+    inner = '<p>'+p.task+'</p>';
+    inner += '<div class="mini-box">';
+    inner += '<div class="timer-track"><div class="timer-fill" id="tf-'+lab.id+'" style="width:100%"></div></div>';
+    inner += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">';
+    inner += '<button class="btn btn-te" onclick="startTimer('+lab.id+','+p.secs+')">Start Timer</button>';
+    inner += '<span id="tl-'+lab.id+'" style="font-size:13px;font-weight:600;color:var(--text3)">'+fmtTime(p.secs)+' remaining</span>';
+    inner += '</div><div style="font-size:12px;color:var(--text3);margin-bottom:10px">Self-assessment criteria:</div>';
+    inner += '<ul class="cl" id="mini-'+lab.id+'">';
+    p.criteria.forEach(function(c,i){
+      var key = 'mini-'+lab.id+'-'+i;
+      var done = S.checks[key];
+      inner += '<li id="'+key+'" class="'+(done?'done':'')+'" onclick="toggleCheck(\''+key+'\')">'
+        +'<div class="cb">'+(done?'✓':'')+'</div>'+esc(c)+'</li>';
+    });
+    inner += '</ul></div>';
+  } else if(p.type==='reflection'){
+    inner = buildReflection(lab.id, p.qs, 'post');
+  }
+
+  return '<div class="cp cp-post">'
+    +'<div class="cp-tag ct-post">◉ Post-Checkpoint</div>'
+    +'<div class="cp-xpbadge">+20 XP</div>'
+    +'<h4>'+p.title+'</h4>'
+    +inner+'</div>';
+}
+
+// ── BONUS ────────────────────────────────────────────────────────────────────
+function buildBonus(lab){
+  var dataKey = 'bonus-cmd-'+lab.id;
+  // Store command in data map to avoid quotes-in-onclick issues
+  window._cmds = window._cmds||{};
+  window._cmds[dataKey] = lab.bonus.cmd;
+  return '<div class="cp cp-bonus">'
+    +'<div class="cp-tag ct-bonus">★ Bonus Easter Egg</div>'
+    +'<div class="cp-xpbadge">+30 XP</div>'
+    +'<h4>Secret Claude Code Command</h4>'
+    +'<p>Run this command in your Claude Code session to unlock the bonus challenge:</p>'
+    +'<div class="egg">'
+    +'<div class="egg-tag">Claude Code Command — click to copy</div>'
+    +'<div class="egg-cmd" onclick="copyCmd(\''+dataKey+'\')">'+esc(lab.bonus.cmd)+'</div>'
+    +'<div class="egg-mission"><div class="ml">Your Mission</div><p>'+esc(lab.bonus.mission)+'</p></div>'
+    +'</div>'
+    +'<div style="margin-top:12px">'
+    +'<button class="btn btn-go" onclick="claimBonus('+lab.id+')">Claim +30 Bonus XP</button>'
+    +'</div></div>';
+}
+
+// ── EXERCISES ────────────────────────────────────────────────────────────────
+function buildEx(labId, ex){
+  var dataKey = 'ex-cmd-'+labId+'-'+ex.id;
+  window._cmds = window._cmds||{};
+  window._cmds[dataKey] = ex.cmd;
+  return '<div class="ex">'
+    +'<div class="ex-label"><span class="ex-num">Exercise '+ex.id+'</span><h4>'+ex.title+'</h4></div>'
+    +'<p>'+esc(ex.desc)+'</p>'
+    +'<div class="code-block">'+esc(ex.cmd)+'</div>'
+    +'<button class="btn btn-gh" style="margin-top:10px" onclick="copyCmd(\''+dataKey+'\')">Copy Command</button>'
+    +'</div>';
+}
+
+// ── CHECKLIST ────────────────────────────────────────────────────────────────
+function buildChecklist(lab){
+  var h = '<div class="cl-box"><div class="cl-title">Lab Completion Checklist</div><ul class="cl">';
+  lab.checklist.forEach(function(item,i){
+    var key = 'cl-'+lab.id+'-'+i;
+    var done = S.checks[key];
+    h += '<li id="'+key+'" class="'+(done?'done':'')+'" onclick="toggleCheck(\''+key+'\')">'
+      +'<div class="cb">'+(done?'✓':'')+'</div>'+esc(item)+'</li>';
+  });
+  h += '</ul></div>';
+  return h;
+}
+
+// ── MCQ ──────────────────────────────────────────────────────────────────────
+function buildMCQ(labId, qs, prefix){
+  var h = '';
+  qs.forEach(function(q, qi){
+    h += '<div class="q-txt">'+qi+1+'. '+esc(q.q)+'</div>';
+    q.opts.forEach(function(opt, oi){
+      var id = 'mcq-'+labId+'-'+prefix+'-'+qi+'-'+oi;
+      h += '<div class="mcq-opt" id="'+id+'" onclick="answerMCQ(\''+labId+'\',\''+prefix+'\','+qi+','+oi+','+q.a+')">'
+        +'<span class="mcq-key">'+['A','B','C','D'][oi]+'</span>'+esc(opt)+'</div>';
+    });
+  });
+  h += '<button class="btn btn-gh" style="margin-top:10px" onclick="revealMCQ(\''+labId+'\',\''+prefix+'\',\''+qs.map(function(q){return q.a;}).join(',')+'\')">Reveal All Answers</button>';
+  return h;
+}
+
+function answerMCQ(labId, prefix, qi, selected, correct){
+  var base = 'mcq-'+labId+'-'+prefix+'-'+qi+'-';
+  for(var i=0;i<4;i++){ var e=document.getElementById(base+i); if(e) e.className='mcq-opt'; }
+  var sel = document.getElementById(base+selected);
+  var cor = document.getElementById(base+correct);
+  if(sel){ sel.className = 'mcq-opt '+(selected===correct?'correct':'wrong'); }
+  if(selected!==correct && cor){ cor.className='mcq-opt reveal'; }
+  toast(selected===correct?'+2 XP':'', selected===correct?'Correct!':'Not quite — correct answer highlighted');
+}
+
+function revealMCQ(labId, prefix, answersStr){
+  var answers = answersStr.split(',').map(Number);
+  answers.forEach(function(a,qi){
+    var e = document.getElementById('mcq-'+labId+'-'+prefix+'-'+qi+'-'+a);
+    if(e) e.className='mcq-opt reveal';
+  });
+}
+
+// ── MATCH ────────────────────────────────────────────────────────────────────
+function buildMatch(labId, pairs){
+  var shuffled = pairs.slice().sort(function(){return Math.random()-.5;});
+  var h = '<p style="font-size:13px;color:var(--text2);margin-bottom:12px">Click a left item, then its matching right item.</p>';
+  h += '<div class="match-wrap"><div class="match-col">';
+  pairs.forEach(function(p,i){
+    h += '<div class="mi" id="ml-'+labId+'-'+i+'" onclick="clickMatch(\''+labId+'\',\'L\','+i+',\''+escQ(p[0])+'\')">'+esc(p[0])+'</div>';
+  });
+  h += '</div><div class="match-col">';
+  shuffled.forEach(function(p,i){
+    var origIdx = pairs.findIndex(function(x){return x[0]===p[0];});
+    h += '<div class="mi" id="mr-'+labId+'-'+i+'" data-key="'+escQ(p[0])+'" onclick="clickMatch(\''+labId+'\',\'R\','+i+',\''+escQ(p[0])+'\')">'+esc(p[1])+'</div>';
+  });
+  h += '</div></div>';
+  h += '<div id="match-fb-'+labId+'" style="margin-top:10px;font-size:13px;color:var(--teal)"></div>';
+  return h;
+}
+
+var _matchSel = {};
+function clickMatch(labId, side, idx, key){
+  var elId = (side==='L'?'ml':'mr')+'-'+labId+'-'+idx;
+  var el = document.getElementById(elId);
+  if(!el || el.classList.contains('matched')) return;
+  var selKey = 'match-'+labId;
+  if(!_matchSel[selKey]){
+    document.querySelectorAll('[id^="ml-'+labId+'-"],[id^="mr-'+labId+'-"]').forEach(function(e){ if(!e.classList.contains('matched')) e.className='mi'; });
+    el.className='mi sel';
+    _matchSel[selKey]={side:side,idx:idx,key:key,elId:elId};
+  } else {
+    var prev=_matchSel[selKey];
+    if(prev.side===side){ el.className='mi sel'; _matchSel[selKey]={side:side,idx:idx,key:key,elId:elId}; return; }
+    var pe=document.getElementById(prev.elId);
+    if(prev.key===key){
+      el.className='mi matched'; if(pe) pe.className='mi matched';
+      toast('+3 XP','Matched!');
+      var matchedCount = document.querySelectorAll('[id^="ml-'+labId+'-"].matched').length;
+      var total = document.querySelectorAll('[id^="ml-'+labId+'-"]').length;
+      if(matchedCount===total) document.getElementById('match-fb-'+labId).textContent='All '+total+' pairs matched!';
+    } else {
+      el.className='mi err'; if(pe) pe.className='mi err';
+      setTimeout(function(){ el.className='mi'; if(pe) pe.className='mi'; },500);
+    }
+    _matchSel[selKey]=null;
+  }
+}
+
+// ── BUG HUNT ─────────────────────────────────────────────────────────────────
+function buildBug(labId, lines, bugs, explains, prefix){
+  var h = '<p style="font-size:13px;color:var(--text2);margin-bottom:10px">Click lines you think contain bugs. There are <strong style="color:var(--red)">'+bugs.length+' bugs</strong> to find.</p>';
+  h += '<div class="code-wrap">';
+  lines.forEach(function(line, i){
+    h += '<div class="bl" id="bug-'+labId+'-'+prefix+'-'+i+'" onclick="toggleBug(\''+labId+'\',\''+prefix+'\','+i+')">'
+      +'<span class="bl-num">'+(i+1)+'</span><span>'+esc(line||' ')+'</span></div>';
+  });
+  h += '</div>';
+  var bugKey='bugs-'+labId+'-'+prefix; window._cmds=window._cmds||{}; window._cmds[bugKey]=explains;
+  h += '<button class="btn btn-red" onclick="revealBugs(\''+labId+'\',\''+prefix+'\','+JSON.stringify(bugs)+',\''+bugKey+'\')">Reveal Bugs</button>';
+  h += '<div class="bug-explain" id="be-'+labId+'-'+prefix+'"></div>';
+  return h;
+}
+
+function toggleBug(labId, prefix, idx){
+  var el = document.getElementById('bug-'+labId+'-'+prefix+'-'+idx);
+  if(el) el.classList.toggle('sel');
+}
+
+function revealBugs(labId, prefix, bugs, explainKey){
+  var explains = (window._cmds&&window._cmds[explainKey])||[];
+  var lineEls = document.querySelectorAll('[id^="bug-'+labId+'-'+prefix+'-"]');
+  lineEls.forEach(function(el,i){
+    el.classList.remove('sel');
+    if(bugs.indexOf(i)>=0) el.className='bl is-bug';
+    else { el.classList.add('not-bug'); setTimeout(function(){el.classList.remove('not-bug');},2000); }
+  });
+  var expEl = document.getElementById('be-'+labId+'-'+prefix);
+  if(expEl){
+    expEl.innerHTML = explains.map(function(e,i){
+      return '<div class="be"><strong>Bug '+(i+1)+'</strong><br>'+esc(e)+'</div>';
+    }).join('');
+  }
+}
+
+// ── FILL IN BLANK ─────────────────────────────────────────────────────────────
+function buildFillIn(labId, lines, prefix){
+  var h = '<p style="font-size:13px;color:var(--text2);margin-bottom:10px">Complete the blanks. Hover for a hint.</p><div class="fi-wrap">';
+  lines.forEach(function(ln,i){
+    if(!ln.b){
+      h += '<div class="fi-line">'+esc(ln.t)+(ln.a?esc(ln.a):'')+'</div>';
+    } else {
+      var id='fi-'+labId+'-'+prefix+'-'+i;
+      var saved = S.fiDone[id]||'';
+      h += '<div class="fi-line">'+esc(ln.t)
+        +'<input class="blank" id="'+id+'" value="'+esc(saved)+'" placeholder="___" title="Hint: '+esc(ln.h)+'"'
+        +' onblur="checkFI(\''+id+'\',\''+escQ(ln.b)+'\')">'
+        +esc(ln.a)+'</div>';
+    }
+  });
+  h += '</div>';
+  var fiKey='fi-'+labId+'-'+prefix; window._cmds=window._cmds||{}; window._cmds[fiKey]=lines.map(function(ln){return ln.b||'';});
+  h += '<button class="btn btn-gh" onclick="revealFI2(\''+labId+'\',\''+prefix+'\',\''+fiKey+'\')">Reveal Answers</button>';
+  return h;
+}
+
+function revealFI2(labId, prefix, fiKey){
+  var answers = (window._cmds&&window._cmds[fiKey])||[];
+  revealFI(labId, prefix, answers);
+}
+function checkFI(id, answer){
+  var el = document.getElementById(id);
+  if(!el) return;
+  var val = el.value.trim();
+  S.fiDone[id] = val; save();
+  if(!val) return;
+  if(val===answer){ el.className='blank ok'; toast('+2 XP','Correct!'); }
+  else { el.className='blank no'; }
+}
+
+function revealFI(labId, prefix, answers){
+  if(!answers) return;
+  answers.forEach(function(a,i){
+    if(!a) return;
+    var el = document.getElementById('fi-'+labId+'-'+prefix+'-'+i);
+    if(el){ el.value=a; el.className='blank ok'; S.fiDone['fi-'+labId+'-'+prefix+'-'+i]=a; }
+  });
+  save();
+}
+
+// ── REFLECTION ────────────────────────────────────────────────────────────────
+function buildReflection(labId, qs, prefix){
+  var h = '';
+  qs.forEach(function(q,i){
+    var key = 'ref-'+labId+'-'+prefix+'-'+i;
+    var saved = S.reflections[key]||'';
+    h += '<div class="rl">Question '+(i+1)+'</div>'
+      +'<div class="rq">'+esc(q)+'</div>'
+      +'<textarea class="ra" placeholder="Your honest reflection..." onchange="saveRef(\''+key+'\',this.value)">'+esc(saved)+'</textarea>';
+  });
+  return h;
+}
+
+function saveRef(key, val){ S.reflections[key]=val; save(); }
+
+// ── CHECKS + TIMER ────────────────────────────────────────────────────────────
+function toggleCheck(key){
+  S.checks[key] = !S.checks[key];
+  var el = document.getElementById(key);
+  if(!el) return;
+  el.className = S.checks[key] ? 'done' : '';
+  el.querySelector('.cb').textContent = S.checks[key] ? '✓' : '';
+  save();
+}
+
+var _timers={};
+function startTimer(labId, secs){
+  if(_timers[labId]) clearInterval(_timers[labId]);
+  var rem=secs;
+  _timers[labId]=setInterval(function(){
+    rem--;
+    var pct=Math.max(0,(rem/secs)*100);
+    var bar=document.getElementById('tf-'+labId);
+    var lbl=document.getElementById('tl-'+labId);
+    if(bar) bar.style.width=pct+'%';
+    if(lbl) lbl.textContent=fmtTime(rem)+' remaining';
+    if(rem<=0){
+      clearInterval(_timers[labId]);
+      if(lbl) lbl.textContent='Time\'s up! Self-assess below.';
+      if(bar) bar.style.background='var(--red)';
+    }
+  },1000);
+  toast('','Timer started — '+Math.floor(secs/60)+' minutes!');
+}
+function fmtTime(s){ return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60); }
+
+// ── SCOREBOARD ───────────────────────────────────────────────────────────────
+function buildScoreRows(){
+  var h='';
+  LABS.forEach(function(lab,i){
+    var s=S.scores[lab.id]||{pre:0,ex:0,post:0,bonus:0,total:0};
+    var dclass={easy:'d-easy',hard:'d-hard',boss:'d-boss',final:'d-final'}[lab.sprint];
+    var done=(s.total||0)>=Math.floor(lab.base*0.5);
+    var status=done?'done':(i===0?'act':'lock');
+    var stClass={done:'sp-done',act:'sp-act',lock:'sp-lock'}[status];
+    var stLabel={done:'Complete',act:'In Progress',lock:'Locked'}[status];
+    h += '<tr><td>'+pad(lab.id)+'</td><td>'+lab.title+'</td>'
+      +'<td><span class="dpill '+dclass+'">'+SMETA[lab.sprint]+'</span></td>'
+      +'<td><input class="xi" id="sc-pre-'+lab.id+'" type="number" min="0" max="20" value="'+(s.pre||0)+'" onchange="updScore('+lab.id+')"><span class="xm">/20</span></td>'
+      +'<td><input class="xi" id="sc-ex-'+lab.id+'" type="number" min="0" max="'+lab.base+'" value="'+(s.ex||0)+'" onchange="updScore('+lab.id+')"><span class="xm">/'+lab.base+'</span></td>'
+      +'<td><input class="xi" id="sc-post-'+lab.id+'" type="number" min="0" max="20" value="'+(s.post||0)+'" onchange="updScore('+lab.id+')"><span class="xm">/20</span></td>'
+      +'<td><input class="xi" id="sc-bonus-'+lab.id+'" type="number" min="0" max="30" value="'+(s.bonus||0)+'" onchange="updScore('+lab.id+')"><span class="xm">/30</span></td>'
+      +'<td class="row-tot" id="st-'+lab.id+'">'+(s.total||0)+'</td>'
+      +'<td><span class="sp '+stClass+'" id="ss-'+lab.id+'">'+stLabel+'</span></td></tr>';
+  });
+  document.getElementById('score-body').innerHTML=h;
+}
+
+function updScore(labId){
+  var lab=LABS.find(function(l){return l.id===labId;});
+  var pre=clamp(+document.getElementById('sc-pre-'+labId).value,0,20);
+  var ex=clamp(+document.getElementById('sc-ex-'+labId).value,0,lab.base);
+  var post=clamp(+document.getElementById('sc-post-'+labId).value,0,20);
+  var bonus=clamp(+document.getElementById('sc-bonus-'+labId).value,0,30);
+  var total=pre+ex+post+bonus;
+  S.scores[labId]={pre:pre,ex:ex,post:post,bonus:bonus,total:total};
+  document.getElementById('st-'+labId).textContent=total;
+  var done=total>=Math.floor(lab.base*0.5);
+  var ss=document.getElementById('ss-'+labId);
+  if(ss){ ss.textContent=done?'Complete':'In Progress'; ss.className='sp '+(done?'sp-done':'sp-act'); }
+  recalc(); save();
+}
+
+function recalc(){
+  var xp=0,labs=0,bonus=0;
+  LABS.forEach(function(lab){
+    var s=S.scores[lab.id]||{};
+    xp+=(s.total||0);
+    if((s.total||0)>=Math.floor(lab.base*0.5)) labs++;
+    if((s.bonus||0)>0) bonus++;
+  });
+  S.xp=xp; S.labs=labs; S.bonus=bonus; save();
+  updateUI(xp,labs,bonus);
+}
+
+function resetScores(){
+  if(!confirm('Reset all scores? Reflections and checkboxes are kept.')) return;
+  S.scores={};
+  LABS.forEach(function(lab){
+    ['pre','ex','post','bonus'].forEach(function(t){
+      var el=document.getElementById('sc-'+t+'-'+lab.id); if(el) el.value=0;
+    });
+    var tot=document.getElementById('st-'+lab.id); if(tot) tot.textContent=0;
+    var ss=document.getElementById('ss-'+lab.id); if(ss){ss.textContent='Locked';ss.className='sp sp-lock';}
+  });
+  recalc();
+}
+
+function claimBonus(labId){
+  var s=S.scores[labId]||{pre:0,ex:0,post:0,bonus:0,total:0};
+  if(s.bonus>=30){ toast('','Bonus already claimed!'); return; }
+  s.bonus=30; s.total=(s.pre||0)+(s.ex||0)+(s.post||0)+30;
+  S.scores[labId]=s;
+  var inp=document.getElementById('sc-bonus-'+labId); if(inp) inp.value=30;
+  var tot=document.getElementById('st-'+labId); if(tot) tot.textContent=s.total;
+  recalc(); save();
+  toast('+30 XP','Bonus claimed!');
+}
+
+function updateUI(xp,labs,bonus){
+  setText('sb-xp',xp); setText('d-xp',xp); setText('d-labs',labs); setText('d-bonus',bonus);
+  var fill=document.getElementById('sb-fill'); if(fill) fill.style.width=Math.min(100,xp/14.5)+'%';
+  var gt=document.getElementById('grand-tot'); if(gt) gt.textContent=xp;
+  var badge=null;
+  for(var i=BADGES.length-1;i>=0;i--){ if(xp>=BADGES[i].xp){badge=BADGES[i];break;} }
+  setText('sb-badge',badge?badge.name:'No badge yet');
+  setText('d-badge',badge?badge.name:'—');
+  setText('d-title',badge?badge.title:'Complete Lab 01 first');
+  var dot=document.getElementById('sb-dot'); if(dot&&badge) dot.style.background=badge.c;
+  buildBadgeWall(xp);
+  // refresh nav
+  LABS.forEach(function(lab){
+    var navEl=document.getElementById('nav-lab-'+lab.id); if(!navEl) return;
+    var s=S.scores[lab.id]||{};
+    var done=(s.total||0)>=Math.floor(lab.base*0.5);
+    var dclass={easy:'d-easy',hard:'d-hard',boss:'d-boss',final:'d-final'}[lab.sprint];
+    navEl.innerHTML='<span class="nav-num" style="font-size:9px">'+pad(lab.id)+'</span>'
+      +'<span style="flex:1;font-size:12px">'+lab.title+'</span>'
+      +'<span class="dpill '+dclass+'">'+SICON[lab.sprint]+'</span>'
+      +(done?'<span class="nav-done">✓</span>':'<span class="nav-xp">'+lab.base+'</span>');
+  });
+}
+
+function buildBadgeWall(xp){
+  var el=document.getElementById('badge-grid'); if(!el) return;
+  var h='';
+  BADGES.forEach(function(b){
+    var unlocked=(xp||S.xp||0)>=b.xp;
+    h+='<div class="badge-card '+(unlocked?'unlocked':'locked')+'">'
+      +'<div class="b-icon" style="background:'+b.bg+'">'+b.icon+'</div>'
+      +'<div><div class="b-name">'+b.name+'</div>'
+      +'<div class="b-req">'+b.xp+' XP required</div>'
+      +'<div class="b-title">'+b.title+'</div>'
+      +(unlocked?'<div class="b-un">Unlocked</div>':'')
+      +'</div></div>';
+  });
+  el.innerHTML=h;
+}
+
+// ── REF TABLES ────────────────────────────────────────────────────────────────
+function buildFeatTable(){
+  var h='<table class="rt"><thead><tr><th>Lab</th><th>Title</th><th>Claude Features</th><th>Stack Output</th></tr></thead><tbody>';
+  LABS.forEach(function(lab){
+    h+='<tr onclick="goToLab('+lab.id+')" style="cursor:pointer">'
+      +'<td>'+pad(lab.id)+'</td><td>'+lab.title+'</td>'
+      +'<td>'+lab.feats.map(function(f){return '<span class="fb">'+f+'</span>';}).join(' ')+'</td>'
+      +'<td>'+lab.stack+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('feat-table-wrap').innerHTML=h;
+}
+
+function buildStackTable(){
+  var cmds=[
+    ['Start dev server','uvicorn app.main:app --reload --port 8000'],
+    ['Run migrations','alembic upgrade head'],
+    ['Run all tests','pytest --asyncio-mode=auto --cov=app'],
+    ['Open Claude Code','claude  (in project root)'],
+    ['Claude Code + MCP','claude --mcp-config .mcp/config.json'],
+    ['Start Celery worker','celery -A app.worker worker --loglevel=info'],
+    ['Lint and format','ruff check . && ruff format .'],
+    ['Type check','mypy app/ --strict'],
+    ['Build Sphinx docs','cd docs && sphinx-build -b html . _build/html'],
+    ['Generate OpenAPI JSON','curl http://localhost:8000/openapi.json > docs/openapi.json'],
+  ];
+  var h='<table class="rt"><thead><tr><th>Task</th><th>Command</th></tr></thead><tbody>';
+  cmds.forEach(function(r,i){
+    h+='<tr><td>'+r[0]+'</td><td style="font-family:var(--fm);font-size:12px;color:var(--teal2)">'+r[1]+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('stack-table-wrap').innerHTML=h;
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────────────────────
+function hideAll(){
+  document.getElementById('home-sections').style.display='none';
+  document.querySelectorAll('.lab-page').forEach(function(el){el.style.display='none';});
+  document.querySelectorAll('.ref-page').forEach(function(el){el.classList.remove('show');});
+  document.querySelectorAll('.nav-a').forEach(function(el){el.classList.remove('active');});
+}
+
+function showHome(){
+  hideAll();
+  document.getElementById('home-sections').style.display='block';
+  document.getElementById('nav-home').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goToLab(id){
+  hideAll();
+  var el=document.getElementById('lab-page-'+id);
+  if(el){ el.style.display='block'; }
+  var nav=document.getElementById('nav-lab-'+id);
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showRef(key){
+  hideAll();
+  var el=document.getElementById('ref-'+key);
+  if(el) el.classList.add('show');
+  var nav=document.getElementById('nav-'+key)||document.getElementById('nav-scores');
+  if(nav) nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function goScores(){ showRef('scores'); }
+
+// ── COPY ─────────────────────────────────────────────────────────────────────
+function copyCmd(key){
+  var text = window._cmds&&window._cmds[key] ? window._cmds[key] : key;
+  if(navigator.clipboard){ navigator.clipboard.writeText(text).then(function(){toast('','Copied to clipboard!');}).catch(function(){fallbackCopy(text);}); }
+  else { fallbackCopy(text); }
+}
+function fallbackCopy(text){
+  var ta=document.createElement('textarea'); ta.value=text;
+  ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('','Copied!'); }catch(e){ toast('','Copy: Ctrl+C'); }
+  document.body.removeChild(ta);
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+var _toastTimer;
+function toast(xp, msg){
+  var el=document.getElementById('toast');
+  var xpEl=document.getElementById('t-xp');
+  var msgEl=document.getElementById('t-msg');
+  if(xpEl) xpEl.textContent=xp;
+  if(msgEl) msgEl.textContent=msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(function(){el.classList.remove('show');},2600);
+}
+
+// ── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme(){
+  var html = document.documentElement;
+  var isLight = html.getAttribute('data-theme')==='light';
+  if(isLight){
+    html.removeAttribute('data-theme');
+    localStorage.setItem('adlc-theme','dark');
+    document.getElementById('theme-icon').textContent='☀️';
+    document.getElementById('theme-label').textContent='Light Mode';
+  } else {
+    html.setAttribute('data-theme','light');
+    localStorage.setItem('adlc-theme','light');
+    document.getElementById('theme-icon').textContent='🌙';
+    document.getElementById('theme-label').textContent='Dark Mode';
+  }
+}
+(function(){
+  var saved = localStorage.getItem('adlc-theme');
+  if(saved==='light'){
+    document.documentElement.setAttribute('data-theme','light');
+    // Update button after DOM ready
+    window.addEventListener('load',function(){
+      var icon=document.getElementById('theme-icon');
+      var lbl=document.getElementById('theme-label');
+      if(icon) icon.textContent='🌙';
+      if(lbl) lbl.textContent='Dark Mode';
+    });
+  }
+})();
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function pad(n){ return n<10?'0'+n:String(n); }
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function setText(id,val){ var el=document.getElementById(id); if(el) el.textContent=val; }
+function esc(s){
+  if(s===null||s===undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escQ(s){ return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+</script>
+</body>
+</html>
