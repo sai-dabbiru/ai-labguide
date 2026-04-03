@@ -15,6 +15,7 @@ export const SICON = { easy: '◎', hard: '◈', boss: '⬡', final: '★' };
 export const LABS = [
   {
     id: 1, title: 'Ideation & Requirements', sprint: 'easy', base: 80, dur: '45 min',
+    product: 'Claude Code', objective: 'Master AI-driven ideation and PRD generation.',
     stack: 'Claude Code · Markdown · PRD',
     feats: ['Role Prompting', 'Constraint Injection', 'Iterative Refinement', 'Long-Context Reasoning'],
     pre: {
@@ -48,6 +49,8 @@ export const LABS = [
   },
   {
     id: 2, title: 'System Architecture', sprint: 'hard', base: 150, dur: '60 min',
+    product: 'Claude Code', objective: 'Design microservices and generate async ORM models.',
+    expectedOutputImage: '/assets/validation/lab2_structure.png',
     stack: 'SQLAlchemy 2.0 · Alembic · OpenAPI',
     feats: ['Structured Output', 'Justification Prompting', 'Code Generation', 'SQL DDL Generation', 'OpenAPI Spec'],
     pre: {
@@ -83,6 +86,8 @@ export const LABS = [
   },
   {
     id: 3, title: 'Frontend Development', sprint: 'easy', base: 80, dur: '75 min',
+    product: 'Claude Code', objective: 'Build accessible UIs with components and HTMX.',
+    expectedOutputImage: '/assets/validation/lab3_kanban.png',
     stack: 'Jinja2 · HTMX · Tailwind CSS',
     feats: ['Component Generation', 'Accessibility Audit', 'WCAG Fix Generation', 'HTMX Patterns', 'Multi-Turn Refinement'],
     pre: {
@@ -113,6 +118,8 @@ export const LABS = [
   },
   {
     id: 4, title: 'Backend with FastAPI', sprint: 'hard', base: 160, dur: '90 min',
+    product: 'Claude Code', objective: 'Develop secure JWT-auth backends and WebSockets.',
+    expectedOutputImage: '/assets/validation/lab4_swagger.png',
     stack: 'FastAPI · JWT · WebSocket · slowapi',
     feats: ['Code Generation', 'Security Review (OWASP)', 'JWT Auth Design', 'WebSocket Pattern', 'Agentic Refactoring', 'Dependency Injection'],
     pre: {
@@ -147,6 +154,7 @@ export const LABS = [
   },
   {
     id: 5, title: 'Testing with Pytest', sprint: 'easy', base: 90, dur: '60 min',
+    product: 'Claude Code', objective: 'Implement async integration tests and coverage gates.',
     stack: 'Pytest · HTTPX · pytest-cov · Playwright',
     feats: ['Test Generation', 'Coverage Gap Analysis', 'Edge Case Discovery', 'Fixture Generation', 'Parametrize Pattern'],
     pre: {
@@ -180,6 +188,7 @@ export const LABS = [
   },
   {
     id: 6, title: 'AI-Powered Code Review', sprint: 'hard', base: 150, dur: '45 min',
+    product: 'Claude Code', objective: 'Perform AI-driven code reviews and bug hunting.',
     stack: 'Ruff · mypy · Claude Code review',
     feats: ['Bug Detection', 'Performance Analysis', 'SOLID Review', 'Anti-Pattern ID', 'Async Python Review', 'Pydantic Type Safety'],
     pre: {
@@ -213,6 +222,7 @@ export const LABS = [
   },
   {
     id: 7, title: 'Documentation', sprint: 'easy', base: 80, dur: '45 min',
+    product: 'Claude Code', objective: 'Automate documentation with Docstrings and ADRs.',
     stack: 'Sphinx · Google docstrings · ADR',
     feats: ['Docstring Generation', 'Technical Writing', 'ADR Drafting', 'README Generation', 'Sphinx autodoc'],
     pre: {
@@ -252,6 +262,7 @@ export const LABS = [
   },
   {
     id: 8, title: 'Claude API Integration', sprint: 'hard', base: 160, dur: '60 min',
+    product: 'Anthropic SDK', objective: 'Integrate Claude API with streaming and Pydantic.',
     stack: 'anthropic SDK · Pydantic · async',
     feats: ['Anthropic Python SDK', 'System Prompts', 'Structured JSON Output', 'Multi-Turn Conversations', 'Async API Calls', 'Streaming'],
     pre: {
@@ -283,6 +294,7 @@ export const LABS = [
   },
   {
     id: 9, title: 'MCP Integration', sprint: 'boss', base: 200, dur: '90 min',
+    product: 'MCP', objective: 'Connect AI to external tools via Model Context Protocol.',
     stack: 'MCP · GitHub · Slack · PostgreSQL',
     feats: ['MCP Protocol', 'Tool Use', 'Custom MCP Server', 'GitHub Automation', 'DB Orchestration', 'Slack Integration'],
     pre: {
@@ -317,6 +329,8 @@ export const LABS = [
   },
   {
     id: 10, title: 'Capstone Sprint', sprint: 'final', base: 300, dur: '120 min',
+    product: 'All Products', objective: 'Deliver an end-to-end AI-powered Capstone project.',
+    expectedOutputImage: '/assets/validation/lab10_digest.png',
     stack: 'Full Stack · All Features',
     feats: ['All Claude Features', 'Timed Sprint', 'End-to-End Build', 'Code Review', 'MCP Delivery', 'Live Demo'],
     pre: {

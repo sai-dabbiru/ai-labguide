@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage.jsx';
 import HomePage from './pages/HomePage.jsx';
 import LabView from './pages/LabView.jsx';
 import { FeaturesPage, CommandsPage, ScoreboardPage } from './pages/ReferencePage.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 import './styles/index.css';
 
 function AppShell() {
@@ -33,10 +34,12 @@ function AppShell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <BrowserRouter>
-        <AppShell />
-      </BrowserRouter>
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
+      </AppProvider>
+    </ErrorBoundary>
   );
 }

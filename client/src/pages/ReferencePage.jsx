@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { LABS, SMETA, STACK_COMMANDS } from '../data/labs.js';
 import { useNavigate, useParams } from 'react-router-dom';
+import { db } from '../firebase.js';
+import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { useState, useEffect } from 'react';
 
 function pad(n) { return n < 10 ? '0' + n : String(n); }
 
@@ -14,14 +16,25 @@ export function FeaturesPage() {
       <div style={{ overflowX: 'auto' }}>
         <table className="rt">
           <thead>
-            <tr><th>Lab</th><th>Title</th><th>Claude Features</th><th>Stack Output</th></tr>
+            <tr>
+              <th>Lab</th>
+              <th>Title</th>
+              <th>Claude Product</th>
+              <th>Learning Objective</th>
+              <th>Claude Features</th>
+              <th>Stack Output</th>
+            </tr>
           </thead>
           <tbody>
             {LABS.map(lab => (
               <tr key={lab.id} onClick={() => navigate(`/lab/${lab.id}`)} style={{ cursor: 'pointer' }}>
                 <td>{pad(lab.id)}</td>
                 <td>{lab.title}</td>
-                <td>{lab.feats.map(f => <span key={f} className="fb" style={{ marginRight: 4 }}>{f}</span>)}</td>
+                <td>
+                  <span className="pill p-pu" style={{ whiteSpace: 'nowrap' }}>{lab.product}</span>
+                </td>
+                <td style={{ fontSize: 12, color: 'var(--text2)', maxWidth: 250 }}>{lab.objective}</td>
+                <td>{lab.feats.map(f => <span key={f} className="fb" style={{ marginRight: 4, display: 'inline-block', marginBottom: 2 }}>{f}</span>)}</td>
                 <td>{lab.stack}</td>
               </tr>
             ))}
@@ -55,14 +68,17 @@ export function CommandsPage() {
 }
 
 export function ScoreboardPage() {
-  const { scores, resetScores } = useApp();
+  const { scores, stats, resetScores } = useApp();
   const navigate = useNavigate();
-
-  const grandTotal = LABS.reduce((sum, lab) => sum + ((scores[lab.id] || {}).total || 0), 0);
 
   return (
     <div className="ref-page">
-      <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>📊 Auto-Scored Scoreboard</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0 }}>📊 Auto-Scored Scoreboard</h2>
+        <button className="btn btn-gh" style={{ fontSize: 11, padding: '6px 12px' }} onClick={resetScores}>
+          Reset All Progress
+        </button>
+      </div>
       <p style={{ color: 'var(--text2)', marginBottom: 22, fontSize: 14 }}>
         Scores are <strong style={{ color: 'var(--teal2)' }}>automatically calculated</strong> as you complete exercises, quizzes, and checklists in each lab.
       </p>
@@ -70,23 +86,23 @@ export function ScoreboardPage() {
       {/* Grand total card */}
       <div style={{
         background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 'var(--r2)',
-        padding: '18px 24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 20
+        padding: '18px 24px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 20
       }}>
         <div>
           <div style={{ fontSize: 9, color: 'var(--text3)', letterSpacing: '.12em', textTransform: 'uppercase' }}>Grand Total</div>
-          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--gold)' }}>{grandTotal}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: 'var(--gold)' }}>{stats.xp}</div>
           <div style={{ fontSize: 11, color: 'var(--text3)' }}>of 1450 XP</div>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ height: 8, background: 'var(--bg3)', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ height: 10, background: 'var(--bg3)', borderRadius: 5, overflow: 'hidden' }}>
             <div style={{
-              width: `${Math.min(100, (grandTotal / 1450) * 100)}%`, height: '100%',
+              width: `${Math.min(100, (stats.xp / 1450) * 100)}%`, height: '100%',
               background: 'linear-gradient(90deg, var(--gold), var(--orange))',
-              borderRadius: 4, transition: 'width .5s ease'
+              borderRadius: 5, transition: 'width .8s cubic-bezier(0.34, 1.56, 0.64, 1)'
             }} />
           </div>
-          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 4 }}>
-            {Math.round((grandTotal / 1450) * 100)}% complete
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 6, fontWeight: 600 }}>
+            {Math.round((stats.xp / 1450) * 100)}% of Curriculum Complete
           </div>
         </div>
       </div>
@@ -101,7 +117,7 @@ export function ScoreboardPage() {
             </tr>
           </thead>
           <tbody>
-            {LABS.map((lab, i) => {
+            {LABS.map((lab) => {
               const s = scores[lab.id] || { pre: 0, ex: 0, post: 0, bonus: 0, total: 0 };
               const dclass = { easy: 'd-easy', hard: 'd-hard', boss: 'd-boss', final: 'd-final' }[lab.sprint];
               const maxXP = lab.base + 70;
@@ -113,34 +129,26 @@ export function ScoreboardPage() {
 
               return (
                 <tr key={lab.id} onClick={() => navigate(`/lab/${lab.id}`)} style={{ cursor: 'pointer' }}>
-                  <td style={{ color: 'var(--orange)' }}>{pad(lab.id)}</td>
-                  <td>{lab.title}</td>
+                  <td style={{ color: 'var(--orange)', fontWeight: 800 }}>{pad(lab.id)}</td>
+                  <td style={{ fontWeight: 700 }}>{lab.title}</td>
                   <td><span className={`dpill ${dclass}`}>{SMETA[lab.sprint]}</span></td>
                   <td>
-                    <span style={{ color: (s.pre || 0) > 0 ? 'var(--blue2)' : 'var(--text3)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {s.pre || 0}
-                    </span>
-                    <span className="xm">/20</span>
+                    <span style={{ color: (s.pre || 0) > 0 ? 'var(--blue2)' : 'var(--text3)', fontWeight: 700 }}>{s.pre || 0}</span>
+                    <span className="xm"> /20</span>
                   </td>
                   <td>
-                    <span style={{ color: (s.ex || 0) > 0 ? 'var(--orange)' : 'var(--text3)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {s.ex || 0}
-                    </span>
-                    <span className="xm">/{lab.base}</span>
+                    <span style={{ color: (s.ex || 0) > 0 ? 'var(--orange)' : 'var(--text3)', fontWeight: 700 }}>{s.ex || 0}</span>
+                    <span className="xm"> /{lab.base}</span>
                   </td>
                   <td>
-                    <span style={{ color: (s.post || 0) > 0 ? 'var(--teal2)' : 'var(--text3)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {s.post || 0}
-                    </span>
-                    <span className="xm">/20</span>
+                    <span style={{ color: (s.post || 0) > 0 ? 'var(--teal2)' : 'var(--text3)', fontWeight: 700 }}>{s.post || 0}</span>
+                    <span className="xm"> /20</span>
                   </td>
                   <td>
-                    <span style={{ color: (s.bonus || 0) > 0 ? 'var(--gold)' : 'var(--text3)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
-                      {s.bonus || 0}
-                    </span>
-                    <span className="xm">/30</span>
+                    <span style={{ color: (s.bonus || 0) > 0 ? 'var(--gold)' : 'var(--text3)', fontWeight: 700 }}>{s.bonus || 0}</span>
+                    <span className="xm"> /30</span>
                   </td>
-                  <td className="row-tot">{s.total || 0}</td>
+                  <td className="row-tot" style={{ color: 'var(--gold)', fontWeight: 800 }}>{s.total || 0}</td>
                   <td><span className={`sp ${stClass}`}>{stLabel}</span></td>
                 </tr>
               );
@@ -148,14 +156,10 @@ export function ScoreboardPage() {
           </tbody>
         </table>
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 14, alignItems: 'center', flexWrap: 'wrap' }}>
-        <button className="btn btn-gh" onClick={resetScores}>Reset All</button>
-        <span style={{ fontSize: 12, color: 'var(--text3)' }}>
-          Grand Total: <strong style={{ color: 'var(--gold)' }}>{grandTotal}</strong> / 1450 XP
-        </span>
-        <span style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>
-          💡 Scores update automatically as you complete lab exercises
-        </span>
+      
+      <div style={{ marginTop: 20, padding: '16px', background: 'rgba(20, 184, 166, 0.05)', borderRadius: 'var(--r2)', fontSize: 12, color: 'var(--text3)', display: 'flex', alignItems: 'center', gap: 12, border: '1px solid var(--border)' }}>
+        <span style={{ fontSize: 20 }}>💡</span>
+        <span>Every task you complete is securely saved to your personal <strong>Firebase Cloud Profile</strong>. You can resume your labs from any device by logging in with the same name.</span>
       </div>
     </div>
   );

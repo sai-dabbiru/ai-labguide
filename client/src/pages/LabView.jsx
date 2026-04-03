@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { LABS, SMETA, SICON } from '../data/labs.js';
 import MCQ from '../components/checkpoints/MCQ.jsx';
@@ -145,6 +145,40 @@ function LabChecklist({ lab }) {
   );
 }
 
+function ExpectedOutputSection({ imageUrl }) {
+  const [show, setShow] = useState(false);
+  return (
+    <div style={{ marginTop: 14 }}>
+      <button 
+        className="btn btn-te" 
+        onClick={() => setShow(!show)}
+        style={{ marginBottom: show ? 12 : 0 }}
+      >
+        {show ? 'Hide Expected Output' : 'View Expected Reference Output →'}
+      </button>
+      {show && (
+        <div style={{ 
+          background: 'var(--card)', 
+          border: '1px solid var(--border)', 
+          borderRadius: 'var(--r2)', 
+          padding: '10px',
+          overflow: 'hidden',
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          <img 
+            src={imageUrl} 
+            alt="Expected Output Reference" 
+            style={{ width: '100%', borderRadius: 'var(--r)', display: 'block' }} 
+          />
+          <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 8, textAlign: 'center' }}>
+            💡 Use this as a visual guide for your Claude-generated work.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Score Summary Card ──────────────────────────────────────────────────────
 function ScoreSummary({ lab }) {
   const { scores } = useApp();
@@ -272,6 +306,10 @@ export default function LabView() {
 
       <h3 style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 14 }}>Exercises</h3>
       {lab.exs.map(ex => <ExerciseCard key={ex.id} labId={lab.id} ex={ex} />)}
+
+      {lab.expectedOutputImage && (
+        <ExpectedOutputSection imageUrl={lab.expectedOutputImage} />
+      )}
 
       <div className="div" />
       <PostCheckpoint lab={lab} />
